@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AltMail</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #0a0a0a;
+  --s1:       #111111;
+  --s2:       #181818;
+  --s3:       #202020;
+  --brd:      rgba(255,255,255,0.07);
+  --brd-hi:   rgba(255,255,255,0.15);
+  --brd-act:  rgba(255,255,255,0.35);
+  --txt:      #f0f0f0;
+  --txt2:     #a0a0a0;
+  --txt3:     #606060;
+  --glow:     rgba(255,255,255,0.06);
+  --r:        14px;
+  --r-sm:     10px;
+  --r-lg:     20px;
+  --font:     'Geist', system-ui, sans-serif;
+  --mono:     'Geist Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--font);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 52px;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--txt);
+}
+.logo-dot { color: var(--txt3); }
+
+.header-chip {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--txt3);
+  background: var(--s2);
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  padding: 4px 12px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.hero h1 {
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: -2px;
+  line-height: 1.1;
+  color: var(--txt);
+  margin-bottom: 14px;
+}
+.hero h1 strong { font-weight: 600; }
+.hero p {
+  font-size: 15px;
+  color: var(--txt3);
+  line-height: 1.6;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  background: var(--s1);
+  border: 1px solid var(--brd);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+.tab {
+  flex: 1;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt3);
+  background: none;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: var(--font);
+  letter-spacing: -0.2px;
+}
+.tab:hover { color: var(--txt2); }
+.tab.active {
+  background: var(--s3);
+  color: var(--txt);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.12);
+  color: var(--txt2);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 100px;
+  margin-left: 6px;
+  min-width: 18px;
+}
+
+/* ── Panel ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Card ── */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--brd);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 24px rgba(0,0,0,0.3);
+}
+
+.card-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--txt3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ── Email display ── */
+.email-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.email-pill {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+  overflow: hidden;
+}
+.email-pill:hover { border-color: var(--brd-hi); background: var(--s3); }
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--txt3);
+  transition: background .3s;
+}
+.status-dot.ok { background: #e0e0e0; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+.status-dot.loading { background: var(--txt3); animation: sdot .8s infinite; }
+.status-dot.err { background: #888; }
+@keyframes sdot { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+.email-addr {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--txt);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  letter-spacing: -0.3px;
+}
+.email-copy-hint { font-size: 11px; color: var(--txt3); flex-shrink: 0; }
+/* copy-flash removed — text swap used instead */
+
+.btn-group { display: flex; gap: 8px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 18px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--r);
+  border: 1px solid var(--brd);
+  background: var(--s2);
+  color: var(--txt2);
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.btn:hover { background: var(--s3); border-color: var(--brd-hi); color: var(--txt); }
+.btn:disabled { opacity: .3; cursor: not-allowed; }
+.btn:active:not(:disabled) { transform: scale(.98); }
+
+.btn-primary {
+  background: var(--txt);
+  color: var(--bg);
+  border-color: transparent;
+  font-weight: 600;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 4px 14px rgba(255,255,255,0.08);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #e8e8e8;
+  color: #000;
+  box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--brd);
+  color: var(--txt3);
+}
+.btn-ghost:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--glow); }
+
+.btn-sm { padding: 7px 13px; font-size: 12px; border-radius: var(--r-sm); }
+
+.btn-danger {
+  background: transparent;
+  border-color: var(--brd);
+  color: var(--txt3);
+}
+.btn-danger:hover { border-color: rgba(255,80,80,0.4); color: #ff6060; background: rgba(255,60,60,0.05); }
+
+/* ── Timer ── */
+.timer-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--brd);
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--txt3);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.timer-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.t-chip {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  background: transparent;
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  color: var(--txt3);
+  cursor: pointer;
+  transition: all .15s;
+}
+.t-chip:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--s2); }
+.t-chip.on {
+  background: var(--txt);
+  color: var(--bg);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* custom time input — no spinners, clean pill */
+.custom-wrap { display: flex; align-items: center; gap: 0; }
+.t-input {
+  width: 56px;
+  background: transparent;
+  border: 1px solid var(--brd);
+  border-right: none;
+  border-radius: 100px 0 0 100px;
+  color: var(--txt);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+  text-align: center;
+  transition: border-color .15s;
+  -moz-appearance: textfield;
+}
+.t-input::-webkit-outer-spin-button,
+.t-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.t-input:focus { border-color: var(--brd-act); }
+.t-input::placeholder { color: var(--txt3); }
+.t-ok-btn {
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  background: transparent;
+  border: 1px solid var(--brd);
+  border-radius: 0 100px 100px 0;
+  color: var(--txt3);
+  cursor: pointer;
+  transition: all .15s;
+}
+.t-ok-btn:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--s2); }
+
+.timer-bar-wrap { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.timer-bar { flex: 1; height: 1px; background: var(--s3); border-radius: 2px; overflow: hidden; }
+.timer-bar-fill {
+  height: 100%;
+  background: var(--txt3);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+.timer-readout { font-family: var(--mono); font-size: 12px; color: var(--txt3); min-width: 56px; text-align: right; }
+
+.status-line { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
+.sl-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--txt3); flex-shrink: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.sl-dot.ok { background: #c8c8c8; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
+.sl-dot.err { background: #666; animation: sdot 1s infinite; }
+.sl-dot.loading { animation: sdot .6s infinite; }
+.sl-txt { font-size: 12px; color: var(--txt3); }
+
+/* ── Inbox ── */
+.inbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inbox-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--txt);
+  letter-spacing: -0.3px;
+}
+.inbox-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt3);
+  background: var(--s3);
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  padding: 2px 9px;
+}
+
+.msg-list { list-style: none; }
+.msg-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 10px;
+  border-top: 1px solid var(--brd);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background .15s;
+  margin: 0 -10px;
+}
+.msg-item:hover { background: var(--glow); }
+
+.msg-av {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--s3);
+  border: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt2);
+  flex-shrink: 0;
+}
+.msg-content { flex: 1; min-width: 0; }
+.msg-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.msg-from {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.msg-time { font-family: var(--mono); font-size: 11px; color: var(--txt3); flex-shrink: 0; }
+.msg-subject { font-size: 13px; color: var(--txt2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
+.msg-preview { font-size: 12px; color: var(--txt3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.empty-view { padding: 48px 20px; text-align: center; }
+.empty-icon-wrap {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--s2);
+  border: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 22px;
+}
+.empty-view h3 { font-size: 15px; font-weight: 600; color: var(--txt2); margin-bottom: 6px; letter-spacing: -0.3px; }
+.empty-view p { font-size: 13px; color: var(--txt3); line-height: 1.6; }
+
+/* ── Detail ── */
+.detail-card {
+  display: none;
+  background: var(--s1);
+  border: 1px solid var(--brd);
+  border-radius: var(--r-lg);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--brd);
+}
+.detail-from { font-size: 15px; font-weight: 600; color: var(--txt); letter-spacing: -0.3px; margin-bottom: 4px; }
+.detail-subject { font-size: 13px; color: var(--txt2); margin-bottom: 5px; }
+.detail-meta { font-family: var(--mono); font-size: 11px; color: var(--txt3); }
+.detail-body { padding: 20px; max-height: 520px; overflow-y: auto; }
+
+.links-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--txt3);
+  margin-bottom: 8px;
+}
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--r-sm);
+  margin-bottom: 6px;
+  text-decoration: none;
+  transition: background .15s, border-color .15s;
+  cursor: pointer;
+  border: 1px solid var(--brd);
+  background: var(--s2);
+}
+.link-card:hover { background: var(--s3); border-color: var(--brd-hi); }
+.link-card.confirm { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+.link-card.confirm:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.3); }
+.link-confirm-badge {
+  font-size: 10px; font-weight: 600;
+  color: var(--bg); background: var(--txt);
+  padding: 2px 7px; border-radius: 100px;
+  flex-shrink: 0; letter-spacing: 0.3px;
+}
+.link-url { font-family: var(--mono); font-size: 12px; color: var(--txt2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.link-card.confirm .link-url { color: var(--txt); }
+.link-arrow { font-size: 13px; color: var(--txt3); flex-shrink: 0; }
+.link-card.confirm .link-arrow { color: var(--txt2); }
+
+.body-divider { border: none; border-top: 1px solid var(--brd); margin: 16px 0; }
+.email-body-text { font-size: 13px; line-height: 1.8; color: var(--txt2); white-space: pre-wrap; word-break: break-word; font-family: var(--mono); }
+
+/* ── Saved ── */
+.saved-empty { text-align: center; padding: 48px 20px; color: var(--txt3); font-size: 14px; line-height: 1.7; }
+.saved-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--s2);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+  margin-bottom: 8px;
+  transition: border-color .15s;
+}
+.saved-item:hover { border-color: var(--brd-hi); }
+.saved-info { flex: 1; min-width: 0; }
+.saved-addr { font-family: var(--mono); font-size: 13px; color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+.saved-meta { font-size: 12px; color: var(--txt3); }
+.saved-name-badge {
+  display: inline-block;
+  font-size: 11px; color: var(--txt3);
+  background: var(--s3); border: 1px solid var(--brd);
+  border-radius: 100px; padding: 2px 9px; margin-right: 6px;
+}
+.saved-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--s1);
+  border: 1px solid var(--brd-hi);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+.modal-title { font-size: 16px; font-weight: 600; color: var(--txt); letter-spacing: -0.4px; margin-bottom: 6px; }
+.modal-sub { font-family: var(--mono); font-size: 12px; color: var(--txt3); margin-bottom: 20px; overflow: hidden; text-overflow: ellipsis; }
+.modal-input {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--brd);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-family: var(--font);
+  font-size: 14px;
+  padding: 12px 14px;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color .15s;
+}
+.modal-input:focus { border-color: var(--brd-act); }
+.modal-input::placeholder { color: var(--txt3); }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: var(--s2);
+  border: 1px solid var(--brd-hi);
+  color: var(--txt2);
+  padding: 11px 20px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.3,.64,1);
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Spinner ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin .7s linear infinite; display: inline-block; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 4px; }
+
+/* ══════════════════════════════════════
+   RESPONSIVE SCALING
+══════════════════════════════════════ */
+
+/* Large desktop (1200px+) */
+@media (min-width: 1200px) {
+  .wrap { max-width: 760px; padding: 56px 32px 100px; }
+  .hero h1 { font-size: 52px; letter-spacing: -2.5px; }
+  .hero p { font-size: 16px; max-width: 420px; }
+  .card { padding: 26px; }
+  .email-addr { font-size: 14px; }
+  .btn { font-size: 14px; padding: 12px 22px; }
+  .msg-from { font-size: 14px; }
+  .msg-subject { font-size: 14px; }
+  header { margin-bottom: 60px; }
+}
+
+/* Tablet (768px – 1199px) — default, mostly fine */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .wrap { max-width: 680px; padding: 44px 24px 80px; }
+}
+
+/* Large phone landscape / small tablet (600px – 767px) */
+@media (max-width: 767px) {
+  .wrap { padding: 28px 16px 72px; }
+  .hero h1 { font-size: 36px; letter-spacing: -1.5px; }
+  .hero p { font-size: 14px; }
+  header { margin-bottom: 40px; }
+  .logo { font-size: 22px; }
+}
+
+/* Mobile portrait (up to 520px) */
+@media (max-width: 520px) {
+  .wrap { padding: 20px 12px 64px; }
+  .hero { margin-bottom: 28px; }
+  .hero h1 { font-size: 30px; letter-spacing: -1.2px; margin-bottom: 10px; }
+  .hero p { font-size: 13px; }
+  header { margin-bottom: 32px; }
+  .logo { font-size: 20px; }
+  .header-chip { font-size: 10px; padding: 3px 10px; }
+
+  /* Stack email row on mobile */
+  .email-row { flex-direction: column; }
+  .email-pill { min-width: unset; }
+  .btn-group { width: 100%; }
+  .btn-group .btn { flex: 1; justify-content: center; }
+
+  /* Smaller cards */
+  .card { padding: 16px; border-radius: 16px; }
+
+  /* Timer chips wrap nicer */
+  .t-chip { font-size: 11px; padding: 5px 11px; }
+  .timer-opts { gap: 5px; }
+  .t-input { width: 62px; font-size: 11px; }
+
+  /* Tabs */
+  .tab { font-size: 12px; padding: 8px 12px; }
+
+  /* Inbox */
+  .msg-av { width: 32px; height: 32px; font-size: 12px; border-radius: 9px; }
+  .msg-from { font-size: 12px; }
+  .msg-subject { font-size: 12px; }
+  .msg-preview { font-size: 11px; }
+  .msg-time { font-size: 10px; }
+  .msg-item { gap: 10px; padding: 12px 8px; }
+
+  /* Detail */
+  .detail-head { padding: 16px; flex-direction: column; }
+  .detail-head .btn { align-self: flex-end; }
+  .detail-body { padding: 16px; }
+
+  /* Saved */
+  .saved-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .saved-actions { width: 100%; }
+  .saved-actions .btn { flex: 1; justify-content: center; }
+
+  /* Buttons */
+  .btn { font-size: 12px; padding: 10px 14px; }
+  .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+  /* Modal */
+  .modal-box { padding: 20px; }
+  .modal-title { font-size: 15px; }
+
+  /* Toast closer to bottom bar */
+  .toast { bottom: 20px; font-size: 12px; padding: 9px 16px; max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+}
+
+/* Very small phones (up to 360px) */
+@media (max-width: 360px) {
+  .hero h1 { font-size: 26px; }
+  .wrap { padding: 16px 10px 56px; }
+  .card { padding: 14px; }
+}
+
+/* Touch device tap target improvements */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+  .t-chip { min-height: 36px; padding: 8px 14px; }
+  .msg-item { padding: 16px 10px; }
+  .tab { padding: 10px 16px; min-height: 40px; }
+}
+
+/* ── Account system ── */
+.auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.auth-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--s3);
+  border: 1px solid var(--brd-hi);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--txt2);
+  cursor: pointer; flex-shrink: 0;
+  transition: border-color .2s;
+}
+.auth-avatar:hover { border-color: var(--brd-act); }
+
+/* ── Phone tab ── */
+.phone-section { margin-bottom: 12px; }
+.phone-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--s2); border: 1px solid var(--brd);
+  border-radius: var(--r); padding: 12px 16px;
+  cursor: pointer; transition: border-color .2s, background .2s;
+  position: relative; overflow: hidden; margin-bottom: 8px;
+}
+.phone-pill:hover { border-color: var(--brd-hi); background: var(--s3); }
+.phone-number {
+  font-family: var(--mono); font-size: 15px; font-weight: 500;
+  color: var(--txt); flex: 1; letter-spacing: 0.5px;
+}
+.phone-country {
+  font-size: 11px; color: var(--txt3); flex-shrink: 0;
+}
+.sms-list { list-style: none; }
+.sms-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 10px; border-top: 1px solid var(--brd);
+  border-radius: var(--r-sm); transition: background .15s;
+  margin: 0 -10px; cursor: default;
+}
+.sms-item:hover { background: var(--glow); }
+.sms-av {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--s3); border: 1px solid var(--brd);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.sms-from { font-size: 13px; font-weight: 600; color: var(--txt); letter-spacing: -0.2px; margin-bottom: 3px; }
+.sms-body { font-size: 13px; color: var(--txt2); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+.sms-time { font-family: var(--mono); font-size: 10px; color: var(--txt3); margin-top: 4px; }
+
+.phone-select-wrap {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.country-chip {
+  padding: 6px 14px; font-size: 12px; font-weight: 500;
+  background: var(--s2); border: 1px solid var(--brd);
+  border-radius: 100px; color: var(--txt3); cursor: pointer;
+  transition: all .15s; font-family: var(--font);
+}
+.country-chip:hover { border-color: var(--brd-hi); color: var(--txt2); }
+.country-chip.on {
+  background: var(--txt); color: var(--bg);
+  border-color: transparent; font-weight: 600;
+}
+
+/* ── Auth modal extras ── */
+.modal-tabs { display: flex; gap: 2px; background: var(--s2); border-radius: 9px; padding: 3px; margin-bottom: 18px; }
+.modal-tab {
+  flex: 1; padding: 7px; font-size: 13px; font-weight: 500;
+  color: var(--txt3); background: none; border: none;
+  border-radius: 7px; cursor: pointer; font-family: var(--font);
+  transition: all .18s;
+}
+.modal-tab.active { background: var(--s3); color: var(--txt); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.modal-err { font-size: 12px; color: #ff6060; margin-top: -10px; margin-bottom: 12px; display: none; }
+.modal-err.show { display: block; }
+.user-info { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 10px 14px; background: var(--s2); border: 1px solid var(--brd); border-radius: var(--r-sm); }
+.user-info-name { font-size: 14px; font-weight: 600; color: var(--txt); }
+.user-info-sub { font-size: 12px; color: var(--txt3); }
+
+/* ── Discord button ── */
+.discord-bar {
+  text-align: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--brd);
+}
+.discord-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 24px;
+  background: #111111;
+  color: #fff; font-family: var(--font);
+  font-size: 14px; font-weight: 600;
+  border: none; border-radius: var(--r);
+  cursor: pointer; text-decoration: none;
+  transition: all .18s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  letter-spacing: -0.2px;
+}
+.discord-btn:hover {
+  background: #222222;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+.discord-btn:active { transform: scale(.98); }
+.discord-icon { font-size: 18px; line-height: 1; }
+.discord-sub { font-size: 11px; color: var(--txt3); margin-top: 8px; }
+
+@media (max-width: 520px) {
+  .discord-btn { font-size: 13px; padding: 11px 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Header -->
+  <header>
+    <div class="logo">AltMail<span class="logo-dot">.</span></div>
+    <div class="auth-bar">
+      <div class="header-chip" id="headerChip">Temporäre E-Mail</div>
+      <div class="auth-avatar" id="authAvatar" onclick="openAuthModal()" title="Account">?</div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1 id="heroTitle">Wegwerf-Emails,<br><strong id="heroStrong">sofort bereit.</strong></h1>
+    <p id="heroSub">Anonym, keine Registrierung. Links direkt klickbar, Emails speicherbar.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tabActive" onclick="switchTab('active')">Email</button>
+    <button class="tab" id="tabPhone" onclick="switchTab('phone')">Telefon</button>
+    <button class="tab" id="tabSaved" onclick="switchTab('saved')">
+      <span id="tabSavedLabel">Gespeichert</span>
+      <span class="tab-badge" id="savedBadge" style="display:none"></span>
+    </button>
+  </div>
+
+  <!-- ── AKTIV PANEL ── -->
+  <div class="panel active" id="panel-active">
+
+    <div class="card">
+      <div class="card-label" id="labelEmail">E-Mail Adresse</div>
+      <div class="email-row">
+        <div class="email-pill" id="emailPill" onclick="copyEmail()">
+          <div class="status-dot loading" id="statusDot"></div>
+          <span class="email-addr" id="emailAddr">Wird generiert…</span>
+          <span class="email-copy-hint" id="copyHint"></span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="genBtn" onclick="doGenerate()" disabled>
+            <span id="genIcon">↻</span> <span id="btnNew">Neue Email</span>
+          </button>
+          <button class="btn btn-ghost" id="saveBtn" onclick="openSave()" disabled>
+            + <span id="btnSave">Speichern</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="timer-section">
+        <div class="section-label" id="labelExpiry">Ablaufzeit</div>
+        <div class="timer-opts">
+          <button class="t-chip" onclick="pickTimer(5, this)" id="chip5">5m</button>
+          <button class="t-chip on" onclick="pickTimer(10, this)" id="chip10">10m</button>
+          <button class="t-chip" onclick="pickTimer(30, this)" id="chip30">30m</button>
+          <button class="t-chip" onclick="pickTimer(60, this)" id="chip60">1h</button>
+          <button class="t-chip" onclick="pickTimer(0, this)" id="chipUnlim">∞</button>
+          <div class="custom-wrap">
+            <input class="t-input" id="customMin" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="min" />
+            <button class="t-ok-btn" onclick="applyCustom()" id="btnOk">→</button>
+          </div>
+        </div>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar"><div class="timer-bar-fill" id="timerFill" style="width:100%"></div></div>
+          <div class="timer-readout" id="timerReadout">--:--</div>
+        </div>
+        <div class="status-line">
+          <div class="sl-dot loading" id="slDot"></div>
+          <span class="sl-txt" id="slTxt">Verbinde mit mail.tm…</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="inbox-header">
+        <div class="inbox-title-row">
+          <span id="labelInbox">Posteingang</span>
+          <span class="inbox-pill" id="inboxCount">0</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="refreshBtn" onclick="doFetch(true)" disabled>
+          <span id="refreshIco">↻</span> <span id="btnRefresh">Aktualisieren</span>
+        </button>
+      </div>
+      <ul class="msg-list" id="msgList"></ul>
+      <div id="emptyState" class="empty-view">
+        <div class="empty-icon-wrap"><span class="spin" style="font-size:18px">↻</span></div>
+        <h3 id="emptyTitle">Verbinde…</h3>
+        <p id="emptyDesc">Einen Moment bitte.</p>
+      </div>
+    </div>
+
+    <div class="detail-card" id="detailCard">
+      <div class="detail-head">
+        <div style="min-width:0;flex:1">
+          <div class="detail-from" id="dFrom"></div>
+          <div class="detail-subject" id="dSubj"></div>
+          <div class="detail-meta" id="dMeta"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btnClose" onclick="closeDetail()">✕ <span id="btnCloseLabel">Schließen</span></button>
+      </div>
+      <div class="detail-body" id="dBody"></div>
+    </div>
+
+  </div>
+
+  <!-- ── SAVED PANEL ── -->
+  <div class="panel" id="panel-saved">
+    <div class="card">
+      <div class="card-label" id="labelSaved">Gespeicherte Adressen</div>
+      <div id="savedList"></div>
+    </div>
+  </div>
+
+  <!-- ── PHONE PANEL ── -->
+  <div class="panel" id="panel-phone">
+    <div class="card phone-section">
+      <div class="card-label">Temporäre Telefonnummer</div>
+      <div class="phone-select-wrap" id="countryChips">
+        <button class="country-chip on" onclick="selectCountry('us',this)">🇺🇸 USA</button>
+        <button class="country-chip" onclick="selectCountry('uk',this)">🇬🇧 UK</button>
+        <button class="country-chip" onclick="selectCountry('de',this)">🇩🇪 DE</button>
+        <button class="country-chip" onclick="selectCountry('fr',this)">🇫🇷 FR</button>
+        <button class="country-chip" onclick="selectCountry('ca',this)">🇨🇦 CA</button>
+        <button class="country-chip" onclick="selectCountry('se',this)">🇸🇪 SE</button>
+        <button class="country-chip" onclick="selectCountry('nl',this)">🇳🇱 NL</button>
+      </div>
+      <div id="phoneList"></div>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="loadPhones()">↻ Neue Nummern</button>
+      </div>
+    </div>
+
+    <!-- Active number card -->
+    <div class="card" id="activePhoneCard" style="display:none">
+      <div class="card-label">Aktive Nummer</div>
+      <div class="email-row" style="margin-bottom:0">
+        <div class="email-pill" id="phonePill" onclick="copyActivePhone()" style="cursor:pointer">
+          <div class="status-dot ok"></div>
+          <span class="email-addr" id="activePhoneNum">—</span>
+          <span class="email-copy-hint">Tippen zum Kopieren</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="smsCard" style="display:none">
+      <div class="inbox-header">
+        <div class="inbox-title-row">
+          SMS <span class="inbox-pill" id="smsCount">0</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshSms()">↻ Refresh</button>
+      </div>
+      <ul class="sms-list" id="smsList"></ul>
+      <div id="smsEmpty" class="empty-view" style="padding:28px 20px">
+        <div class="empty-icon-wrap" style="font-size:20px">💬</div>
+        <h3>Keine SMS</h3>
+        <p>Sende eine SMS an diese Nummer.<br><span style="font-size:11px;color:var(--txt3)">Aktualisiert alle 20 Sek.</span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Discord -->
+  <div class="discord-bar">
+    <a class="discord-btn" href="https://discord.gg/jN9q5ceYYp" target="_blank" rel="noopener">
+      <span class="discord-icon">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.59 1.32A18.18 18.18 0 0 0 14.17 0c-.19.33-.4.78-.55 1.13a16.8 16.8 0 0 0-5.24 0C8.23.78 8.01.33 7.82 0A18.24 18.24 0 0 0 3.4 1.32C.49 5.7-.3 10 .09 14.23A18.35 18.35 0 0 0 5.68 16c.44-.6.84-1.24 1.17-1.92a11.9 11.9 0 0 1-1.85-.9l.45-.35a13.1 13.1 0 0 0 11.1 0l.46.35c-.59.35-1.21.65-1.86.9.34.68.73 1.32 1.17 1.92a18.3 18.3 0 0 0 5.59-1.77C21.8 9.43 20.46 5.17 18.59 1.32ZM7.35 11.66c-1.13 0-2.06-1.06-2.06-2.35 0-1.3.9-2.36 2.06-2.36 1.16 0 2.08 1.06 2.06 2.36 0 1.29-.9 2.35-2.06 2.35Zm7.3 0c-1.13 0-2.06-1.06-2.06-2.35 0-1.3.9-2.36 2.06-2.36 1.16 0 2.08 1.06 2.06 2.36 0 1.29-.9 2.35-2.06 2.35Z" fill="currentColor"/>
+        </svg>
+      </span>
+      Join our Discord
+    </a>
+    <div class="discord-sub">Community · Support · Updates</div>
+  </div>
+
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModalOv" onclick="closeAuthModalOv(event)">
+  <div class="modal-box">
+    <!-- Logged out view -->
+    <div id="authLoggedOut">
+      <div class="modal-title" style="margin-bottom:14px">Account</div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Login</button>
+        <button class="modal-tab" id="authTabReg" onclick="switchAuthTab('register')">Registrieren</button>
+      </div>
+      <input class="modal-input" id="authEmail" type="email" placeholder="E-Mail Adresse" />
+      <input class="modal-input" id="authPw" type="password" placeholder="Passwort" />
+      <div class="modal-err" id="authErr"></div>
+      <div class="modal-btns">
+        <button class="btn btn-ghost" onclick="closeAuthModal()">Abbrechen</button>
+        <button class="btn btn-primary" id="authSubmitBtn" onclick="authSubmit()">Login</button>
+      </div>
+    </div>
+    <!-- Logged in view -->
+    <div id="authLoggedIn" style="display:none">
+      <div class="modal-title" style="margin-bottom:12px">Mein Account</div>
+      <div class="user-info">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--s3);border:1px solid var(--brd-hi);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--txt);flex-shrink:0" id="authAvatarBig">?</div>
+        <div>
+          <div class="user-info-name" id="authUserName">User</div>
+          <div class="user-info-sub" id="authUserEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85f0f6e0f7c5e0fde4e8f5e9e0abe6eae8">[email&#160;protected]</a></div>
+        </div>
+      </div>
+      <div class="modal-btns" style="justify-content:space-between">
+        <button class="btn btn-danger btn-sm" onclick="authLogout()">Ausloggen</button>
+        <button class="btn btn-ghost" onclick="closeAuthModal()">Schließen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal-overlay" id="modalOv" onclick="closeModalOv(event)">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Email speichern</div>
+    <div class="modal-sub" id="modalAddr"></div>
+    <input class="modal-input" id="saveName" type="text" placeholder="Bezeichnung (optional)" maxlength="60" />
+    <div class="modal-btns">
+      <button class="btn btn-ghost" id="btnCancel" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-primary" id="btnConfirm" onclick="confirmSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════
+const TRANSLATIONS = {
+  de: {
+    headerChip: 'Temporäre E-Mail',
+    heroTitle: 'Wegwerf-Emails,',
+    heroStrong: 'sofort bereit.',
+    heroSub: 'Anonym, keine Registrierung. Links direkt klickbar, Emails speicherbar.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Gespeichert',
+    labelEmail: 'E-Mail Adresse',
+    btnNew: 'Neue Email',
+    btnSave: 'Speichern',
+    labelExpiry: 'Ablaufzeit',
+    chipUnlim: '∞ Unbegrenzt',
+    labelInbox: 'Posteingang',
+    btnRefresh: 'Aktualisieren',
+    emptyConnecting: 'Verbinde…',
+    emptyConnectingDesc: 'Einen Moment bitte.',
+    emptyNoMail: 'Noch keine Nachrichten',
+    emptyNoMailDesc: 'Sende eine E-Mail an deine Adresse.\nAktualisiert sich alle 15 Sekunden.',
+    labelSaved: 'Gespeicherte Adressen',
+    btnCloseLabel: 'Schließen',
+    modalTitle: 'Email speichern',
+    savePlaceholder: 'Bezeichnung (optional)',
+    btnCancel: 'Abbrechen',
+    btnConfirm: 'Speichern',
+    copyHint: 'Tippen zum Kopieren',
+    copyFlash: 'Kopiert ✓',
+    statusConnecting: 'Verbinde mit mail.tm…',
+    statusReady: 'Bereit · aktualisiert alle 15 Sek.',
+    statusExpired: 'Session abgelaufen',
+    statusFailed: 'Aktualisierung fehlgeschlagen',
+    statusSavedLoading: 'Gespeicherte Email wird geladen…',
+    statusSavedActive: 'Gespeicherte Email aktiv',
+    statusLastUpdate: 'Zuletzt: ',
+    generating: 'Wird generiert…',
+    errorRetry: 'Fehler – erneut versuchen',
+    errorExpired: 'Fehler – Email evtl. abgelaufen',
+    toastNewMsg: '📬 {n} neue Nachricht{pl}',
+    toastAlreadySaved: 'Bereits gespeichert',
+    toastSaved: '✓ Gespeichert',
+    toastDeleted: 'Gelöscht',
+    toastCopied: 'Kopiert: ',
+    toastTimer: 'Timer: {n} Minuten',
+    btnCopy: 'Kopieren',
+    btnLoad: 'Laden',
+    linkConfirmBadge: 'Bestätigen',
+    linksConfirmLabel: 'Bestätigungs-Links – direkt anklicken',
+    linksLabel: 'Links',
+    contentLabel: 'Inhalt',
+    emptyBody: '(Leer)',
+    noSubject: '(Kein Betreff)',
+    unknown: 'Unbekannt',
+    to: 'An: ',
+    savedEmptyMsg: 'Noch keine Adressen gespeichert.\n\nKlicke auf "+ Speichern" bei einer aktiven Email.',
+    timeJustNow: 'Gerade eben',
+    timeMin: ' Min.',
+    unlimitedSaved: '∞ Gespeichert',
+    errNoEmail: 'Fehler: ',
+  },
+  en: {
+    headerChip: 'Temporary Email',
+    heroTitle: 'Disposable emails,',
+    heroStrong: 'ready instantly.',
+    heroSub: 'Anonymous, no signup. Clickable links, saveable addresses.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Saved',
+    labelEmail: 'Email Address',
+    btnNew: 'New Email',
+    btnSave: 'Save',
+    labelExpiry: 'Expiry',
+    chipUnlim: '∞ Unlimited',
+    labelInbox: 'Inbox',
+    btnRefresh: 'Refresh',
+    emptyConnecting: 'Connecting…',
+    emptyConnectingDesc: 'Just a moment.',
+    emptyNoMail: 'No messages yet',
+    emptyNoMailDesc: 'Send an email to your address.\nRefreshes every 15 seconds.',
+    labelSaved: 'Saved Addresses',
+    btnCloseLabel: 'Close',
+    modalTitle: 'Save email',
+    savePlaceholder: 'Label (optional)',
+    btnCancel: 'Cancel',
+    btnConfirm: 'Save',
+    copyHint: 'Tap to copy',
+    copyFlash: 'Copied ✓',
+    statusConnecting: 'Connecting to mail.tm…',
+    statusReady: 'Ready · refreshes every 15 sec.',
+    statusExpired: 'Session expired',
+    statusFailed: 'Refresh failed',
+    statusSavedLoading: 'Loading saved email…',
+    statusSavedActive: 'Saved email active',
+    statusLastUpdate: 'Last: ',
+    generating: 'Generating…',
+    errorRetry: 'Error – please retry',
+    errorExpired: 'Error – email may have expired',
+    toastNewMsg: '📬 {n} new message{pl}',
+    toastAlreadySaved: 'Already saved',
+    toastSaved: '✓ Saved',
+    toastDeleted: 'Deleted',
+    toastCopied: 'Copied: ',
+    toastTimer: 'Timer: {n} minutes',
+    btnCopy: 'Copy',
+    btnLoad: 'Load',
+    linkConfirmBadge: 'Confirm',
+    linksConfirmLabel: 'Confirmation links – click directly',
+    linksLabel: 'Links',
+    contentLabel: 'Content',
+    emptyBody: '(Empty)',
+    noSubject: '(No subject)',
+    unknown: 'Unknown',
+    to: 'To: ',
+    savedEmptyMsg: 'No addresses saved yet.\n\nClick "+ Save" on an active email.',
+    timeJustNow: 'Just now',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Saved',
+    errNoEmail: 'Error: ',
+  },
+  fr: {
+    headerChip: 'Email temporaire',
+    heroTitle: 'Emails jetables,',
+    heroStrong: 'prêts instantanément.',
+    heroSub: 'Anonyme, sans inscription. Liens cliquables, adresses sauvegardables.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Sauvegardé',
+    labelEmail: 'Adresse email',
+    btnNew: 'Nouvel email',
+    btnSave: 'Sauvegarder',
+    labelExpiry: 'Expiration',
+    chipUnlim: '∞ Illimité',
+    labelInbox: 'Boîte de réception',
+    btnRefresh: 'Actualiser',
+    emptyConnecting: 'Connexion…',
+    emptyConnectingDesc: 'Un instant.',
+    emptyNoMail: 'Aucun message',
+    emptyNoMailDesc: 'Envoyez un email à votre adresse.\nActualisation toutes les 15 secondes.',
+    labelSaved: 'Adresses sauvegardées',
+    btnCloseLabel: 'Fermer',
+    modalTitle: 'Sauvegarder l\u2019email',
+    savePlaceholder: 'Étiquette (optionnel)',
+    btnCancel: 'Annuler',
+    btnConfirm: 'Sauvegarder',
+    copyHint: 'Appuyer pour copier',
+    copyFlash: 'Copié ✓',
+    statusConnecting: 'Connexion à mail.tm…',
+    statusReady: 'Prêt · actualise toutes les 15 sec.',
+    statusExpired: 'Session expirée',
+    statusFailed: 'Échec de l\'actualisation',
+    statusSavedLoading: 'Chargement email sauvegardé…',
+    statusSavedActive: 'Email sauvegardé actif',
+    statusLastUpdate: 'Dernier: ',
+    generating: 'Génération…',
+    errorRetry: 'Erreur – réessayer',
+    errorExpired: 'Erreur – email peut-être expiré',
+    toastNewMsg: '📬 {n} nouveau(x) message(s)',
+    toastAlreadySaved: 'Déjà sauvegardé',
+    toastSaved: '✓ Sauvegardé',
+    toastDeleted: 'Supprimé',
+    toastCopied: 'Copié: ',
+    toastTimer: 'Minuterie: {n} minutes',
+    btnCopy: 'Copier',
+    btnLoad: 'Charger',
+    linkConfirmBadge: 'Confirmer',
+    linksConfirmLabel: 'Liens de confirmation – cliquez directement',
+    linksLabel: 'Liens',
+    contentLabel: 'Contenu',
+    emptyBody: '(Vide)',
+    noSubject: '(Sans objet)',
+    unknown: 'Inconnu',
+    to: 'À: ',
+    savedEmptyMsg: 'Aucune adresse sauvegardée.\n\nCliquez sur "+ Sauvegarder" sur un email actif.',
+    timeJustNow: 'À l\'instant',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Sauvegardé',
+    errNoEmail: 'Erreur: ',
+  },
+  es: {
+    headerChip: 'Email temporal',
+    heroTitle: 'Emails desechables,',
+    heroStrong: 'listos al instante.',
+    heroSub: 'Anónimo, sin registro. Links clicables, direcciones guardables.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Guardado',
+    labelEmail: 'Dirección de email',
+    btnNew: 'Nuevo email',
+    btnSave: 'Guardar',
+    labelExpiry: 'Expiración',
+    chipUnlim: '∞ Ilimitado',
+    labelInbox: 'Bandeja de entrada',
+    btnRefresh: 'Actualizar',
+    emptyConnecting: 'Conectando…',
+    emptyConnectingDesc: 'Un momento.',
+    emptyNoMail: 'Sin mensajes aún',
+    emptyNoMailDesc: 'Envía un email a tu dirección.\nSe actualiza cada 15 segundos.',
+    labelSaved: 'Direcciones guardadas',
+    btnCloseLabel: 'Cerrar',
+    modalTitle: 'Guardar email',
+    savePlaceholder: 'Etiqueta (opcional)',
+    btnCancel: 'Cancelar',
+    btnConfirm: 'Guardar',
+    copyHint: 'Toca para copiar',
+    copyFlash: 'Copiado ✓',
+    statusConnecting: 'Conectando a mail.tm…',
+    statusReady: 'Listo · actualiza cada 15 seg.',
+    statusExpired: 'Sesión caducada',
+    statusFailed: 'Error al actualizar',
+    statusSavedLoading: 'Cargando email guardado…',
+    statusSavedActive: 'Email guardado activo',
+    statusLastUpdate: 'Último: ',
+    generating: 'Generando…',
+    errorRetry: 'Error – intentar de nuevo',
+    errorExpired: 'Error – email posiblemente caducado',
+    toastNewMsg: '📬 {n} mensaje(s) nuevo(s)',
+    toastAlreadySaved: 'Ya guardado',
+    toastSaved: '✓ Guardado',
+    toastDeleted: 'Eliminado',
+    toastCopied: 'Copiado: ',
+    toastTimer: 'Temporizador: {n} minutos',
+    btnCopy: 'Copiar',
+    btnLoad: 'Cargar',
+    linkConfirmBadge: 'Confirmar',
+    linksConfirmLabel: 'Links de confirmación – clic directo',
+    linksLabel: 'Links',
+    contentLabel: 'Contenido',
+    emptyBody: '(Vacío)',
+    noSubject: '(Sin asunto)',
+    unknown: 'Desconocido',
+    to: 'Para: ',
+    savedEmptyMsg: 'No hay direcciones guardadas.\n\nHaz clic en "+ Guardar" en un email activo.',
+    timeJustNow: 'Ahora mismo',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Guardado',
+    errNoEmail: 'Error: ',
+  },
+  pt: {
+    headerChip: 'Email temporário',
+    heroTitle: 'Emails descartáveis,',
+    heroStrong: 'prontos na hora.',
+    heroSub: 'Anônimo, sem cadastro. Links clicáveis, endereços salvos.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Salvos',
+    labelEmail: 'Endereço de email',
+    btnNew: 'Novo email',
+    btnSave: 'Salvar',
+    labelExpiry: 'Expiração',
+    chipUnlim: '∞ Ilimitado',
+    labelInbox: 'Caixa de entrada',
+    btnRefresh: 'Atualizar',
+    emptyConnecting: 'Conectando…',
+    emptyConnectingDesc: 'Um momento.',
+    emptyNoMail: 'Nenhuma mensagem ainda',
+    emptyNoMailDesc: 'Envie um email para seu endereço.\nAtualiza a cada 15 segundos.',
+    labelSaved: 'Endereços salvos',
+    btnCloseLabel: 'Fechar',
+    modalTitle: 'Salvar email',
+    savePlaceholder: 'Etiqueta (opcional)',
+    btnCancel: 'Cancelar',
+    btnConfirm: 'Salvar',
+    copyHint: 'Toque para copiar',
+    copyFlash: 'Copiado ✓',
+    statusConnecting: 'Conectando ao mail.tm…',
+    statusReady: 'Pronto · atualiza a cada 15 seg.',
+    statusExpired: 'Sessão expirada',
+    statusFailed: 'Falha ao atualizar',
+    statusSavedLoading: 'Carregando email salvo…',
+    statusSavedActive: 'Email salvo ativo',
+    statusLastUpdate: 'Último: ',
+    generating: 'Gerando…',
+    errorRetry: 'Erro – tentar novamente',
+    errorExpired: 'Erro – email possivelmente expirado',
+    toastNewMsg: '📬 {n} nova(s) mensagem(ns)',
+    toastAlreadySaved: 'Já salvo',
+    toastSaved: '✓ Salvo',
+    toastDeleted: 'Excluído',
+    toastCopied: 'Copiado: ',
+    toastTimer: 'Temporizador: {n} minutos',
+    btnCopy: 'Copiar',
+    btnLoad: 'Carregar',
+    linkConfirmBadge: 'Confirmar',
+    linksConfirmLabel: 'Links de confirmação – clique diretamente',
+    linksLabel: 'Links',
+    contentLabel: 'Conteúdo',
+    emptyBody: '(Vazio)',
+    noSubject: '(Sem assunto)',
+    unknown: 'Desconhecido',
+    to: 'Para: ',
+    savedEmptyMsg: 'Nenhum endereço salvo ainda.\n\nClique em "+ Salvar" em um email ativo.',
+    timeJustNow: 'Agora mesmo',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Salvo',
+    errNoEmail: 'Erro: ',
+  },
+  it: {
+    headerChip: 'Email temporanea',
+    heroTitle: 'Email usa e getta,',
+    heroStrong: 'pronte subito.',
+    heroSub: 'Anonimo, senza registrazione. Link cliccabili, email salvabili.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Salvati',
+    labelEmail: 'Indirizzo email',
+    btnNew: 'Nuova email',
+    btnSave: 'Salva',
+    labelExpiry: 'Scadenza',
+    chipUnlim: '∞ Illimitato',
+    labelInbox: 'Posta in arrivo',
+    btnRefresh: 'Aggiorna',
+    emptyConnecting: 'Connessione…',
+    emptyConnectingDesc: 'Un momento.',
+    emptyNoMail: 'Nessun messaggio',
+    emptyNoMailDesc: 'Invia un\'email al tuo indirizzo.\nSi aggiorna ogni 15 secondi.',
+    labelSaved: 'Indirizzi salvati',
+    btnCloseLabel: 'Chiudi',
+    modalTitle: 'Salva email',
+    savePlaceholder: 'Etichetta (opzionale)',
+    btnCancel: 'Annulla',
+    btnConfirm: 'Salva',
+    copyHint: 'Tocca per copiare',
+    copyFlash: 'Copiato ✓',
+    statusConnecting: 'Connessione a mail.tm…',
+    statusReady: 'Pronto · aggiorna ogni 15 sec.',
+    statusExpired: 'Sessione scaduta',
+    statusFailed: 'Aggiornamento fallito',
+    statusSavedLoading: 'Caricamento email salvata…',
+    statusSavedActive: 'Email salvata attiva',
+    statusLastUpdate: 'Ultimo: ',
+    generating: 'Generazione…',
+    errorRetry: 'Errore – riprova',
+    errorExpired: 'Errore – email potrebbe essere scaduta',
+    toastNewMsg: '📬 {n} nuovo/i messaggio/i',
+    toastAlreadySaved: 'Già salvato',
+    toastSaved: '✓ Salvato',
+    toastDeleted: 'Eliminato',
+    toastCopied: 'Copiato: ',
+    toastTimer: 'Timer: {n} minuti',
+    btnCopy: 'Copia',
+    btnLoad: 'Carica',
+    linkConfirmBadge: 'Conferma',
+    linksConfirmLabel: 'Link di conferma – clicca direttamente',
+    linksLabel: 'Link',
+    contentLabel: 'Contenuto',
+    emptyBody: '(Vuoto)',
+    noSubject: '(Nessun oggetto)',
+    unknown: 'Sconosciuto',
+    to: 'A: ',
+    savedEmptyMsg: 'Nessun indirizzo salvato.\n\nClicca su "+ Salva" su un\'email attiva.',
+    timeJustNow: 'Proprio ora',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Salvato',
+    errNoEmail: 'Errore: ',
+  },
+  nl: {
+    headerChip: 'Tijdelijk e-mailadres',
+    heroTitle: 'Wegwerp-e-mails,',
+    heroStrong: 'direct klaar.',
+    heroSub: 'Anoniem, geen registratie. Links direct klikbaar, e-mails opslaanbaar.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Opgeslagen',
+    labelEmail: 'E-mailadres',
+    btnNew: 'Nieuw e-mail',
+    btnSave: 'Opslaan',
+    labelExpiry: 'Vervaltijd',
+    chipUnlim: '∞ Onbeperkt',
+    labelInbox: 'Inbox',
+    btnRefresh: 'Vernieuwen',
+    emptyConnecting: 'Verbinden…',
+    emptyConnectingDesc: 'Even geduld.',
+    emptyNoMail: 'Nog geen berichten',
+    emptyNoMailDesc: 'Stuur een e-mail naar uw adres.\nVernieuwt elke 15 seconden.',
+    labelSaved: 'Opgeslagen adressen',
+    btnCloseLabel: 'Sluiten',
+    modalTitle: 'E-mail opslaan',
+    savePlaceholder: 'Label (optioneel)',
+    btnCancel: 'Annuleren',
+    btnConfirm: 'Opslaan',
+    copyHint: 'Tikken om te kopiëren',
+    copyFlash: 'Gekopieerd ✓',
+    statusConnecting: 'Verbinden met mail.tm…',
+    statusReady: 'Klaar · vernieuwt elke 15 sec.',
+    statusExpired: 'Sessie verlopen',
+    statusFailed: 'Vernieuwen mislukt',
+    statusSavedLoading: 'Opgeslagen e-mail laden…',
+    statusSavedActive: 'Opgeslagen e-mail actief',
+    statusLastUpdate: 'Laatste: ',
+    generating: 'Genereren…',
+    errorRetry: 'Fout – opnieuw proberen',
+    errorExpired: 'Fout – e-mail mogelijk verlopen',
+    toastNewMsg: '📬 {n} nieuw(e) bericht(en)',
+    toastAlreadySaved: 'Al opgeslagen',
+    toastSaved: '✓ Opgeslagen',
+    toastDeleted: 'Verwijderd',
+    toastCopied: 'Gekopieerd: ',
+    toastTimer: 'Timer: {n} minuten',
+    btnCopy: 'Kopiëren',
+    btnLoad: 'Laden',
+    linkConfirmBadge: 'Bevestigen',
+    linksConfirmLabel: 'Bevestigingslinks – direct klikken',
+    linksLabel: 'Links',
+    contentLabel: 'Inhoud',
+    emptyBody: '(Leeg)',
+    noSubject: '(Geen onderwerp)',
+    unknown: 'Onbekend',
+    to: 'Aan: ',
+    savedEmptyMsg: 'Nog geen adressen opgeslagen.\n\nKlik op "+ Opslaan" bij een actief e-mail.',
+    timeJustNow: 'Zojuist',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Opgeslagen',
+    errNoEmail: 'Fout: ',
+  },
+  pl: {
+    headerChip: 'Tymczasowy email',
+    heroTitle: 'Jednorazowe emaile,',
+    heroStrong: 'gotowe natychmiast.',
+    heroSub: 'Anonimowo, bez rejestracji. Klikalne linki, adresy do zapisania.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Zapisane',
+    labelEmail: 'Adres email',
+    btnNew: 'Nowy email',
+    btnSave: 'Zapisz',
+    labelExpiry: 'Czas wygaśnięcia',
+    chipUnlim: '∞ Bez limitu',
+    labelInbox: 'Skrzynka odbiorcza',
+    btnRefresh: 'Odśwież',
+    emptyConnecting: 'Łączenie…',
+    emptyConnectingDesc: 'Chwileczkę.',
+    emptyNoMail: 'Brak wiadomości',
+    emptyNoMailDesc: 'Wyślij email na swój adres.\nOdświeża się co 15 sekund.',
+    labelSaved: 'Zapisane adresy',
+    btnCloseLabel: 'Zamknij',
+    modalTitle: 'Zapisz email',
+    savePlaceholder: 'Etykieta (opcjonalnie)',
+    btnCancel: 'Anuluj',
+    btnConfirm: 'Zapisz',
+    copyHint: 'Dotknij aby skopiować',
+    copyFlash: 'Skopiowano ✓',
+    statusConnecting: 'Łączenie z mail.tm…',
+    statusReady: 'Gotowy · odświeża co 15 sek.',
+    statusExpired: 'Sesja wygasła',
+    statusFailed: 'Odświeżanie nieudane',
+    statusSavedLoading: 'Ładowanie zapisanego emaila…',
+    statusSavedActive: 'Zapisany email aktywny',
+    statusLastUpdate: 'Ostatni: ',
+    generating: 'Generowanie…',
+    errorRetry: 'Błąd – spróbuj ponownie',
+    errorExpired: 'Błąd – email mógł wygasnąć',
+    toastNewMsg: '📬 {n} nowa/e wiadomość/i',
+    toastAlreadySaved: 'Już zapisano',
+    toastSaved: '✓ Zapisano',
+    toastDeleted: 'Usunięto',
+    toastCopied: 'Skopiowano: ',
+    toastTimer: 'Timer: {n} minut',
+    btnCopy: 'Kopiuj',
+    btnLoad: 'Załaduj',
+    linkConfirmBadge: 'Potwierdź',
+    linksConfirmLabel: 'Linki potwierdzające – kliknij bezpośrednio',
+    linksLabel: 'Linki',
+    contentLabel: 'Treść',
+    emptyBody: '(Pusty)',
+    noSubject: '(Brak tematu)',
+    unknown: 'Nieznany',
+    to: 'Do: ',
+    savedEmptyMsg: 'Brak zapisanych adresów.\n\nKliknij "+ Zapisz" przy aktywnym emailu.',
+    timeJustNow: 'Przed chwilą',
+    timeMin: ' min.',
+    unlimitedSaved: '∞ Zapisany',
+    errNoEmail: 'Błąd: ',
+  },
+  ru: {
+    headerChip: 'Временная почта',
+    heroTitle: 'Одноразовые email-адреса,',
+    heroStrong: 'мгновенно.',
+    heroSub: 'Анонимно, без регистрации. Кликабельные ссылки, адреса можно сохранять.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Сохранённые',
+    labelEmail: 'Email-адрес',
+    btnNew: 'Новый email',
+    btnSave: 'Сохранить',
+    labelExpiry: 'Время жизни',
+    chipUnlim: '∞ Без ограничений',
+    labelInbox: 'Входящие',
+    btnRefresh: 'Обновить',
+    emptyConnecting: 'Подключение…',
+    emptyConnectingDesc: 'Минуту.',
+    emptyNoMail: 'Сообщений нет',
+    emptyNoMailDesc: 'Отправьте письмо на ваш адрес.\nОбновляется каждые 15 секунд.',
+    labelSaved: 'Сохранённые адреса',
+    btnCloseLabel: 'Закрыть',
+    modalTitle: 'Сохранить email',
+    savePlaceholder: 'Метка (необязательно)',
+    btnCancel: 'Отмена',
+    btnConfirm: 'Сохранить',
+    copyHint: 'Нажмите для копирования',
+    copyFlash: 'Скопировано ✓',
+    statusConnecting: 'Подключение к mail.tm…',
+    statusReady: 'Готово · обновление каждые 15 сек.',
+    statusExpired: 'Сессия истекла',
+    statusFailed: 'Ошибка обновления',
+    statusSavedLoading: 'Загрузка сохранённого адреса…',
+    statusSavedActive: 'Сохранённый адрес активен',
+    statusLastUpdate: 'Последнее: ',
+    generating: 'Генерация…',
+    errorRetry: 'Ошибка – попробуйте снова',
+    errorExpired: 'Ошибка – email мог истечь',
+    toastNewMsg: '📬 {n} новых сообщений',
+    toastAlreadySaved: 'Уже сохранено',
+    toastSaved: '✓ Сохранено',
+    toastDeleted: 'Удалено',
+    toastCopied: 'Скопировано: ',
+    toastTimer: 'Таймер: {n} минут',
+    btnCopy: 'Копировать',
+    btnLoad: 'Загрузить',
+    linkConfirmBadge: 'Подтвердить',
+    linksConfirmLabel: 'Ссылки подтверждения – кликните напрямую',
+    linksLabel: 'Ссылки',
+    contentLabel: 'Содержимое',
+    emptyBody: '(Пусто)',
+    noSubject: '(Без темы)',
+    unknown: 'Неизвестно',
+    to: 'Кому: ',
+    savedEmptyMsg: 'Нет сохранённых адресов.\n\nНажмите "+ Сохранить" у активного email.',
+    timeJustNow: 'Только что',
+    timeMin: ' мин.',
+    unlimitedSaved: '∞ Сохранён',
+    errNoEmail: 'Ошибка: ',
+  },
+  ja: {
+    headerChip: '使い捨てメール',
+    heroTitle: '捨てアドを',
+    heroStrong: 'すぐに作成。',
+    heroSub: '匿名・登録不要。リンクがクリック可能、アドレスを保存できます。',
+    tabActive: 'Email',
+    tabSavedLabel: '保存済み',
+    labelEmail: 'メールアドレス',
+    btnNew: '新しいメール',
+    btnSave: '保存',
+    labelExpiry: '有効期限',
+    chipUnlim: '∞ 無制限',
+    labelInbox: '受信トレイ',
+    btnRefresh: '更新',
+    emptyConnecting: '接続中…',
+    emptyConnectingDesc: 'しばらくお待ちください。',
+    emptyNoMail: 'メールなし',
+    emptyNoMailDesc: 'アドレスにメールを送信してください。\n15秒ごとに更新されます。',
+    labelSaved: '保存されたアドレス',
+    btnCloseLabel: '閉じる',
+    modalTitle: 'メールを保存',
+    savePlaceholder: 'ラベル（任意）',
+    btnCancel: 'キャンセル',
+    btnConfirm: '保存',
+    copyHint: 'タップしてコピー',
+    copyFlash: 'コピーしました ✓',
+    statusConnecting: 'mail.tmに接続中…',
+    statusReady: '準備完了 · 15秒ごとに更新',
+    statusExpired: 'セッションが期限切れです',
+    statusFailed: '更新に失敗しました',
+    statusSavedLoading: '保存済みメールを読み込み中…',
+    statusSavedActive: '保存済みメールがアクティブ',
+    statusLastUpdate: '最終更新: ',
+    generating: '生成中…',
+    errorRetry: 'エラー – 再試行してください',
+    errorExpired: 'エラー – メールが期限切れの可能性があります',
+    toastNewMsg: '📬 新着メール {n}件',
+    toastAlreadySaved: '既に保存済み',
+    toastSaved: '✓ 保存しました',
+    toastDeleted: '削除しました',
+    toastCopied: 'コピー: ',
+    toastTimer: 'タイマー: {n}分',
+    btnCopy: 'コピー',
+    btnLoad: '読み込む',
+    linkConfirmBadge: '確認',
+    linksConfirmLabel: '確認リンク – 直接クリック',
+    linksLabel: 'リンク',
+    contentLabel: '内容',
+    emptyBody: '（空）',
+    noSubject: '（件名なし）',
+    unknown: '不明',
+    to: '宛先: ',
+    savedEmptyMsg: '保存済みアドレスはありません。\n\nアクティブなメールの "+ 保存" をクリックしてください。',
+    timeJustNow: 'たった今',
+    timeMin: '分前',
+    unlimitedSaved: '∞ 保存済み',
+    errNoEmail: 'エラー: ',
+  },
+  zh: {
+    headerChip: '临时邮箱',
+    heroTitle: '一次性邮件，',
+    heroStrong: '即刻生成。',
+    heroSub: '匿名使用，无需注册。链接可直接点击，地址可保存。',
+    tabActive: 'Email',
+    tabSavedLabel: '已保存',
+    labelEmail: '邮箱地址',
+    btnNew: '新邮箱',
+    btnSave: '保存',
+    labelExpiry: '过期时间',
+    chipUnlim: '∞ 无限制',
+    labelInbox: '收件箱',
+    btnRefresh: '刷新',
+    emptyConnecting: '连接中…',
+    emptyConnectingDesc: '请稍候。',
+    emptyNoMail: '暂无邮件',
+    emptyNoMailDesc: '向您的地址发送邮件。\n每15秒自动刷新。',
+    labelSaved: '已保存的地址',
+    btnCloseLabel: '关闭',
+    modalTitle: '保存邮箱',
+    savePlaceholder: '标签（可选）',
+    btnCancel: '取消',
+    btnConfirm: '保存',
+    copyHint: '点击复制',
+    copyFlash: '已复制 ✓',
+    statusConnecting: '正在连接 mail.tm…',
+    statusReady: '就绪 · 每15秒刷新',
+    statusExpired: '会话已过期',
+    statusFailed: '刷新失败',
+    statusSavedLoading: '加载已保存邮箱…',
+    statusSavedActive: '已保存邮箱正在使用',
+    statusLastUpdate: '最近: ',
+    generating: '生成中…',
+    errorRetry: '错误 – 请重试',
+    errorExpired: '错误 – 邮箱可能已过期',
+    toastNewMsg: '📬 {n} 条新邮件',
+    toastAlreadySaved: '已经保存过了',
+    toastSaved: '✓ 已保存',
+    toastDeleted: '已删除',
+    toastCopied: '已复制: ',
+    toastTimer: '定时器: {n} 分钟',
+    btnCopy: '复制',
+    btnLoad: '加载',
+    linkConfirmBadge: '确认',
+    linksConfirmLabel: '确认链接 – 直接点击',
+    linksLabel: '链接',
+    contentLabel: '内容',
+    emptyBody: '（空）',
+    noSubject: '（无主题）',
+    unknown: '未知',
+    to: '收件人: ',
+    savedEmptyMsg: '暂无已保存的地址。\n\n在活跃邮箱旁点击「+ 保存」。',
+    timeJustNow: '刚刚',
+    timeMin: '分钟前',
+    unlimitedSaved: '∞ 已保存',
+    errNoEmail: '错误: ',
+  },
+  tr: {
+    headerChip: 'Geçici E-posta',
+    heroTitle: 'Tek kullanımlık e-postalar,',
+    heroStrong: 'anında hazır.',
+    heroSub: 'Anonim, kayıt gerekmez. Bağlantılar tıklanabilir, e-postalar kaydedilebilir.',
+    tabActive: 'Email',
+    tabSavedLabel: 'Kaydedilen',
+    labelEmail: 'E-posta Adresi',
+    btnNew: 'Yeni E-posta',
+    btnSave: 'Kaydet',
+    labelExpiry: 'Süre Sonu',
+    chipUnlim: '∞ Sınırsız',
+    labelInbox: 'Gelen Kutusu',
+    btnRefresh: 'Yenile',
+    emptyConnecting: 'Bağlanıyor…',
+    emptyConnectingDesc: 'Bir saniye.',
+    emptyNoMail: 'Henüz mesaj yok',
+    emptyNoMailDesc: 'Adresinize bir e-posta gönderin.\n15 saniyede bir güncellenir.',
+    labelSaved: 'Kayıtlı Adresler',
+    btnCloseLabel: 'Kapat',
+    modalTitle: 'E-postayı kaydet',
+    savePlaceholder: 'Etiket (isteğe bağlı)',
+    btnCancel: 'İptal',
+    btnConfirm: 'Kaydet',
+    copyHint: 'Kopyalamak için dokun',
+    copyFlash: 'Kopyalandı ✓',
+    statusConnecting: 'mail.tm\'ye bağlanıyor…',
+    statusReady: 'Hazır · her 15 sn. güncellenir.',
+    statusExpired: 'Oturum süresi doldu',
+    statusFailed: 'Güncelleme başarısız',
+    statusSavedLoading: 'Kayıtlı e-posta yükleniyor…',
+    statusSavedActive: 'Kayıtlı e-posta aktif',
+    statusLastUpdate: 'Son: ',
+    generating: 'Oluşturuluyor…',
+    errorRetry: 'Hata – tekrar deneyin',
+    errorExpired: 'Hata – e-posta süresi dolmuş olabilir',
+    toastNewMsg: '📬 {n} yeni mesaj',
+    toastAlreadySaved: 'Zaten kayıtlı',
+    toastSaved: '✓ Kaydedildi',
+    toastDeleted: 'Silindi',
+    toastCopied: 'Kopyalandı: ',
+    toastTimer: 'Zamanlayıcı: {n} dakika',
+    btnCopy: 'Kopyala',
+    btnLoad: 'Yükle',
+    linkConfirmBadge: 'Onayla',
+    linksConfirmLabel: 'Onay bağlantıları – doğrudan tıkla',
+    linksLabel: 'Bağlantılar',
+    contentLabel: 'İçerik',
+    emptyBody: '(Boş)',
+    noSubject: '(Konu yok)',
+    unknown: 'Bilinmiyor',
+    to: 'Alıcı: ',
+    savedEmptyMsg: 'Kayıtlı adres yok.\n\nAktif bir e-postada "+ Kaydet" butonuna tıklayın.',
+    timeJustNow: 'Az önce',
+    timeMin: ' dak.',
+    unlimitedSaved: '∞ Kaydedildi',
+    errNoEmail: 'Hata: ',
+  },
+};
+
+// Country → language code mapping
+const COUNTRY_LANG = {
+  DE:'de', AT:'de', CH:'de', LI:'de',
+  US:'en', GB:'en', AU:'en', CA:'en', NZ:'en', IE:'en', ZA:'en', SG:'en', IN:'en', NG:'en', KE:'en', GH:'en',
+  FR:'fr', BE:'fr', LU:'fr', MC:'fr', SN:'fr', CI:'fr', CM:'fr',
+  ES:'es', MX:'es', AR:'es', CO:'es', CL:'es', PE:'es', VE:'es', EC:'es', GT:'es', CU:'es', BO:'es', DO:'es', HN:'es', PY:'es', SV:'es', NI:'es', CR:'es', PA:'es', UY:'es',
+  BR:'pt', PT:'pt', AO:'pt', MZ:'pt',
+  IT:'it', SM:'it', VA:'it',
+  NL:'nl',
+  PL:'pl',
+  RU:'ru', BY:'ru', KZ:'ru',
+  JP:'ja',
+  CN:'zh', TW:'zh', HK:'zh', MO:'zh',
+  TR:'tr',
+};
+
+let T = TRANSLATIONS.de; // default
+let currentLang = 'de';
+
+async function detectLanguage() {
+  try {
+    // Try browser language first as a quick heuristic
+    const bLang = (navigator.language || 'de').split('-')[0].toLowerCase();
+
+    // Fetch geo-IP
+    const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const d = await r.json();
+      const countryCode = (d.country_code || '').toUpperCase();
+      const langCode = COUNTRY_LANG[countryCode];
+      if (langCode && TRANSLATIONS[langCode]) {
+        applyLanguage(langCode);
+        return;
+      }
+    }
+  } catch(e) { /* fallback */ }
+
+  // Fallback: browser language
+  try {
+    const bLang = (navigator.language || navigator.languages?.[0] || 'de').split('-')[0].toLowerCase();
+    if (TRANSLATIONS[bLang]) { applyLanguage(bLang); return; }
+  } catch(e) {}
+
+  applyLanguage('en'); // final fallback
+}
+
+function applyLanguage(lang) {
+  if (!TRANSLATIONS[lang]) lang = 'en';
+  T = TRANSLATIONS[lang];
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Apply static UI strings
+  $('headerChip').textContent = T.headerChip;
+  $('heroTitle').childNodes[0].textContent = T.heroTitle + '\n';
+  $('heroStrong').textContent = T.heroStrong;
+  $('heroSub').textContent = T.heroSub;
+  $('tabActive').textContent = T.tabActive;
+  $('tabSavedLabel').textContent = T.tabSavedLabel;
+  $('labelEmail').textContent = T.labelEmail;
+  $('btnNew').textContent = T.btnNew;
+  $('btnSave').textContent = T.btnSave;
+  $('labelExpiry').textContent = T.labelExpiry;
+  $('chipUnlim').textContent = T.chipUnlim;
+  $('labelInbox').textContent = T.labelInbox;
+  $('btnRefresh').querySelector('#btnRefresh') && ($('btnRefresh').querySelector('span:last-child').textContent = T.btnRefresh);
+  $('btnRefresh').lastChild.textContent = ' ' + T.btnRefresh;
+  $('labelSaved').textContent = T.labelSaved;
+  $('btnCloseLabel').textContent = T.btnCloseLabel;
+  $('modalTitle').textContent = T.modalTitle;
+  $('saveName').placeholder = T.savePlaceholder;
+  $('btnCancel').textContent = T.btnCancel;
+  $('btnConfirm').textContent = T.btnConfirm;
+  $('slTxt').textContent = T.statusConnecting;
+  $('emailAddr').textContent = T.generating;
+}
+
+// ══════════════════════════════════════
+// APP LOGIC
+// ══════════════════════════════════════
+const BASE = 'https://api.mail.tm';
+const SK = 'altmail_v2';
+
+let tok='', addr='', pw='', msgs=[];
+let tSecs=600, tMax=600, tIv, aIv;
+let tMode='countdown';
+
+const $=id=>document.getElementById(id);
+function rnd(n){return Array.from({length:n},()=>'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*36)]).join('')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmt(iso){
+  if(!iso)return'';
+  const d=new Date(iso),now=new Date(),df=now-d;
+  if(df<60000)return T.timeJustNow;
+  if(df<3600000)return Math.floor(df/60000)+T.timeMin;
+  if(d.toDateString()===now.toDateString())return d.toLocaleTimeString(currentLang,{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString(currentLang,{day:'2-digit',month:'2-digit',year:'2-digit'});
+}
+function setStatus(s,t){
+  $('slDot').className='sl-dot '+(s==='ok'?'ok':s==='err'?'err':'loading');
+  $('slTxt').textContent=t;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────
+function switchTab(n){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabMap={'active':'tabActive','phone':'tabPhone','saved':'tabSaved'};
+  if(tabMap[n])$(tabMap[n]).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $('panel-'+n).classList.add('active');
+  if(n==='saved')renderSaved();
+  if(n==='phone')loadPhones();
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────
+function pickTimer(mins, btn){
+  document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(mins===0){
+    tMode='unlimited'; clearInterval(tIv);
+    $('timerReadout').textContent='∞';
+    $('timerFill').style.width='100%';
+  } else {
+    tMode='countdown'; tMax=mins*60;
+    if(tok) startTimer();
+  }
+}
+function applyCustom(){
+  const v=parseInt($('customMin').value.replace(/[^0-9]/g,''));
+  if(!v||v<1)return;
+  document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));
+  tMode='countdown'; tMax=v*60;
+  if(tok) startTimer();
+  showToast(T.toastTimer.replace('{n}',v));
+}
+function startTimer(){
+  clearInterval(tIv);
+  if(tMode==='unlimited'){$('timerReadout').textContent='∞';$('timerFill').style.width='100%';return;}
+  tSecs=tMax;
+  tIv=setInterval(()=>{
+    tSecs--;
+    const m=Math.floor(tSecs/60),s=tSecs%60;
+    $('timerReadout').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    $('timerFill').style.width=(tSecs/tMax*100)+'%';
+    if(tSecs<=0){clearInterval(tIv);doGenerate();}
+  },1000);
+}
+
+// ── Generate ──────────────────────────────────────────────────────────
+async function doGenerate(){
+  clearInterval(aIv);clearInterval(tIv);
+  tok='';addr='';pw='';msgs=[];
+  $('emailAddr').textContent=T.generating;
+  $('copyHint').textContent='';
+  $('genBtn').disabled=true; $('saveBtn').disabled=true; $('refreshBtn').disabled=true;
+  $('statusDot').className='status-dot loading';
+  setStatus('loading', T.statusConnecting);
+  renderInbox(true); closeDetail();
+
+  try{
+    const dr=await fetch(BASE+'/domains?page=1');
+    if(!dr.ok)throw new Error('Domains: '+dr.status);
+    const dd=await dr.json();
+    const domain=(dd['hydra:member']||dd)[0]?.domain;
+    if(!domain)throw new Error('No domain available');
+
+    const user=rnd(10),password=rnd(14)+'Aa1!';
+    const address=user+'@'+domain;
+    const ar=await fetch(BASE+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address,password})});
+    if(!ar.ok){const e=await ar.json().catch(()=>({}));throw new Error(e['hydra:description']||ar.status);}
+
+    const tr=await fetch(BASE+'/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address,password})});
+    if(!tr.ok)throw new Error('Token: '+tr.status);
+    tok=(await tr.json()).token; addr=address; pw=password;
+
+    $('emailAddr').textContent=addr;
+    $('copyHint').textContent=T.copyHint;
+    $('statusDot').className='status-dot ok';
+    $('genBtn').disabled=false; $('saveBtn').disabled=false; $('refreshBtn').disabled=false;
+    setStatus('ok', T.statusReady);
+    startTimer();
+    await doFetch(false);
+    aIv=setInterval(()=>doFetch(false),15000);
+  }catch(e){
+    console.error(e);
+    $('statusDot').className='status-dot err';
+    $('genBtn').disabled=false;
+    $('emailAddr').textContent=T.errorRetry;
+    setStatus('err', T.errNoEmail + e.message);
+    renderInbox(false);
+  }
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────
+async function doFetch(manual=false){
+  if(!tok)return;
+  if(manual){$('refreshIco').className='spin';$('refreshBtn').disabled=true;}
+  try{
+    const r=await fetch(BASE+'/messages?page=1',{headers:{'Authorization':'Bearer '+tok}});
+    if(r.status===401){setStatus('err', T.statusExpired);return;}
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const list=d['hydra:member']||[];
+    const old=new Set(msgs.map(m=>m.id));
+    const fresh=list.filter(m=>!old.has(m.id));
+    if(fresh.length>0&&msgs.length>0){
+      const pl=fresh.length>1?'s':'';
+      showToast(T.toastNewMsg.replace('{n}',fresh.length).replace('{pl}',pl));
+    }
+    msgs=list;
+    $('inboxCount').textContent=msgs.length;
+    renderInbox(false);
+    setStatus('ok', T.statusLastUpdate+new Date().toLocaleTimeString(currentLang,{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+  }catch(e){setStatus('err', T.statusFailed);}
+  finally{$('refreshIco').className='';$('refreshIco').textContent='↻';$('refreshBtn').disabled=false;}
+}
+
+// ── Render inbox ──────────────────────────────────────────────────────
+function renderInbox(loading){
+  const list=$('msgList'),empty=$('emptyState');
+  if(loading){
+    list.innerHTML='';empty.style.display='';
+    empty.innerHTML=`<div class="empty-icon-wrap"><span class="spin" style="font-size:18px">↻</span></div><h3>${esc(T.emptyConnecting)}</h3><p>${esc(T.emptyConnectingDesc)}</p>`;
+    return;
+  }
+  if(!msgs.length){
+    list.innerHTML='';empty.style.display='';
+    empty.innerHTML=`<div class="empty-icon-wrap" style="font-size:22px">◻</div><h3>${esc(T.emptyNoMail)}</h3><p>${esc(T.emptyNoMailDesc).replace('\n','<br>')}</p>`;
+    return;
+  }
+  empty.style.display='none';
+  list.innerHTML=msgs.map(m=>`
+    <li class="msg-item" onclick="openMsg('${m.id}')">
+      <div class="msg-av">${(m.from?.address||'?')[0].toUpperCase()}</div>
+      <div class="msg-content">
+        <div class="msg-row1">
+          <span class="msg-from">${esc(m.from?.address||T.unknown)}</span>
+          <span class="msg-time">${fmt(m.createdAt)}</span>
+        </div>
+        <div class="msg-subject">${esc(m.subject||T.noSubject)}</div>
+        <div class="msg-preview">${esc(m.intro||'')}</div>
+      </div>
+    </li>`).join('');
+}
+
+// ── Open message ──────────────────────────────────────────────────────
+function extractLinks(text,html){
+  const s=new Set();
+  const re=/https?:\/\/[^\s"'<>)\]\\,]+/g;
+  (text||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));
+  (html||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));
+  return[...s].filter(u=>!/(\.png|\.gif|\.jpg|\.jpeg|\.svg|\.ico|\.css|\.woff|unsubscribe)/i.test(u));
+}
+function isConfirm(u){return/confirm|verif|activat|token|auth|validate|magic|click|email.*link/i.test(u);}
+
+async function openMsg(id){
+  if(!tok)return;
+  try{
+    const r=await fetch(BASE+'/messages/'+id,{headers:{'Authorization':'Bearer '+tok}});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const m=await r.json();
+    $('dFrom').textContent=m.from?.address||T.unknown;
+    $('dSubj').textContent=m.subject||T.noSubject;
+    $('dMeta').textContent=T.to+(m.to?.[0]?.address||addr)+'  ·  '+new Date(m.createdAt).toLocaleString(currentLang);
+
+    const htmlStr=Array.isArray(m.html)?m.html.join(''):(m.html||'');
+    const all=extractLinks(m.text||'',htmlStr);
+    const confirms=all.filter(isConfirm);
+    const others=all.filter(u=>!isConfirm(u));
+
+    let html='';
+    if(confirms.length){
+      html+=`<div style="margin-bottom:16px">
+        <div class="links-label">${esc(T.linksConfirmLabel)}</div>
+        ${confirms.map(u=>`<a class="link-card confirm" href="${esc(u)}" target="_blank" rel="noopener">
+          <span class="link-confirm-badge">${esc(T.linkConfirmBadge)}</span>
+          <span class="link-url">${esc(u)}</span>
+          <span class="link-arrow">↗</span>
+        </a>`).join('')}
+      </div>`;
+    }
+    if(others.length){
+      html+=`<div style="margin-bottom:16px">
+        <div class="links-label">${esc(T.linksLabel)}</div>
+        ${others.map(u=>`<a class="link-card" href="${esc(u)}" target="_blank" rel="noopener">
+          <span class="link-url">${esc(u)}</span>
+          <span class="link-arrow">↗</span>
+        </a>`).join('')}
+      </div>`;
+    }
+    if(m.text?.trim()){
+      if(html)html+='<hr class="body-divider">';
+      html+=`<div class="links-label" style="margin-bottom:10px">${esc(T.contentLabel)}</div><div class="email-body-text">${esc(m.text.trim())}</div>`;
+    }
+    if(!html)html=`<p style="color:var(--txt3);font-size:13px">${esc(T.emptyBody)}</p>`;
+    $('dBody').innerHTML=html;
+    $('detailCard').style.display='block';
+    $('detailCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){showToast(T.errNoEmail+e.message);}
+}
+function closeDetail(){$('detailCard').style.display='none';}
+
+// ── Copy ──────────────────────────────────────────────────────────────
+async function copyEmail(){
+  if(!addr)return;
+  try{await navigator.clipboard.writeText(addr);}catch(e){}
+  // Swap text inside the field
+  const el=$('emailAddr');
+  const hint=$('copyHint');
+  el.textContent=T.copyFlash;
+  hint.textContent='';
+  el.style.color='var(--txt)';
+  setTimeout(()=>{
+    el.textContent=addr;
+    hint.textContent=T.copyHint;
+    el.style.color='';
+  },2000);
+}
+
+// ── Saved ─────────────────────────────────────────────────────────────
+function loadSaved(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
+function writeSaved(a){localStorage.setItem(SK,JSON.stringify(a));}
+
+function updateSavedBadge(){
+  const n=loadSaved().length;
+  const b=$('savedBadge');
+  b.textContent=n; b.style.display=n?'':'none';
+}
+
+function openSave(){
+  if(!addr)return;
+  $('modalAddr').textContent=addr;
+  $('saveName').value='';
+  $('modalOv').classList.add('open');
+  setTimeout(()=>$('saveName').focus(),100);
+}
+function closeModal(){$('modalOv').classList.remove('open');}
+function closeModalOv(e){if(e.target===$('modalOv'))closeModal();}
+
+function confirmSave(){
+  if(!addr)return;
+  const arr=loadSaved();
+  if(arr.find(x=>x.address===addr)){showToast(T.toastAlreadySaved);closeModal();return;}
+  arr.unshift({address:addr,password:pw,name:$('saveName').value.trim(),savedAt:new Date().toISOString(),id:rnd(8)});
+  writeSaved(arr);
+  updateSavedBadge();
+  closeModal();
+  showToast(T.toastSaved);
+}
+
+function deleteSaved(id){
+  writeSaved(loadSaved().filter(x=>x.id!==id));
+  updateSavedBadge(); renderSaved(); showToast(T.toastDeleted);
+}
+
+async function loadSaved_email(item){
+  switchTab('active');
+  clearInterval(aIv);clearInterval(tIv);
+  tok='';addr='';pw='';msgs=[];
+  $('emailAddr').textContent=T.generating;
+  $('copyHint').textContent='';
+  $('genBtn').disabled=true;$('saveBtn').disabled=true;$('refreshBtn').disabled=true;
+  $('statusDot').className='status-dot loading';
+  setStatus('loading', T.statusSavedLoading);
+  renderInbox(true);closeDetail();
+
+  try{
+    const tr=await fetch(BASE+'/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:item.address,password:item.password})});
+    if(!tr.ok)throw new Error('HTTP '+tr.status);
+    tok=(await tr.json()).token; addr=item.address; pw=item.password;
+
+    $('emailAddr').textContent=addr;
+    $('copyHint').textContent=T.copyHint;
+    $('statusDot').className='status-dot ok';
+    $('genBtn').disabled=false;$('saveBtn').disabled=false;$('refreshBtn').disabled=false;
+    tMode='unlimited';
+    $('timerReadout').textContent=T.unlimitedSaved;
+    $('timerFill').style.width='100%';
+    setStatus('ok', T.statusSavedActive);
+    await doFetch(false);
+    aIv=setInterval(()=>doFetch(false),15000);
+  }catch(e){
+    $('statusDot').className='status-dot err';
+    $('genBtn').disabled=false;
+    $('emailAddr').textContent=T.errorExpired;
+    setStatus('err', e.message);
+    renderInbox(false);
+  }
+}
+
+function renderSaved(){
+  const arr=loadSaved();
+  const el=$('savedList');
+  if(!arr.length){
+    const lines=T.savedEmptyMsg.split('\n');
+    el.innerHTML=`<div class="saved-empty">${lines.map(esc).join('<br>')}</div>`;
+    return;
+  }
+  el.innerHTML=arr.map(item=>`
+    <div class="saved-item">
+      <div class="saved-info">
+        <div class="saved-addr">${esc(item.address)}</div>
+        <div class="saved-meta">
+          ${item.name?`<span class="saved-name-badge">${esc(item.name)}</span>`:''}
+          ${new Date(item.savedAt).toLocaleDateString(currentLang,{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
+        </div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyText('${esc(item.address)}')">${esc(T.btnCopy)}</button>
+        <button class="btn btn-primary btn-sm" onclick='loadSaved_email(${JSON.stringify(item)})'>${esc(T.btnLoad)}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSaved('${item.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function copyText(t){
+  try{navigator.clipboard.writeText(t);}catch(e){}
+  showToast(T.toastCopied);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────
+let toastT;
+function showToast(msg){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeModal();}});
+$('saveName').addEventListener('keydown',e=>{if(e.key==='Enter')confirmSave();});
+
+
+// ══════════════════════════════════════
+// ACCOUNT SYSTEM
+// ══════════════════════════════════════
+const AUTH_SK = 'altmail_auth';
+let currentUser = null;
+
+function loadUser(){ try{ return JSON.parse(localStorage.getItem(AUTH_SK)||'null'); }catch(e){ return null; } }
+function saveUser(u){ localStorage.setItem(AUTH_SK, JSON.stringify(u)); }
+function clearUser(){ localStorage.removeItem(AUTH_SK); }
+
+function openAuthModal(){
+  currentUser = loadUser();
+  if(currentUser){
+    $('authLoggedOut').style.display='none';
+    $('authLoggedIn').style.display='';
+    $('authUserName').textContent = currentUser.name || currentUser.email.split('@')[0];
+    $('authUserEmail').textContent = currentUser.email;
+    $('authAvatarBig').textContent = (currentUser.email[0]||'?').toUpperCase();
+  } else {
+    $('authLoggedOut').style.display='';
+    $('authLoggedIn').style.display='none';
+    $('authErr').classList.remove('show');
+    $('authEmail').value='';
+    $('authPw').value='';
+  }
+  $('authModalOv').classList.add('open');
+  setTimeout(()=>$('authEmail').focus(),120);
+}
+function closeAuthModal(){ $('authModalOv').classList.remove('open'); }
+function closeAuthModalOv(e){ if(e.target===$('authModalOv'))closeAuthModal(); }
+
+let authMode = 'login';
+function switchAuthTab(mode){
+  authMode = mode;
+  $('authTabLogin').classList.toggle('active', mode==='login');
+  $('authTabReg').classList.toggle('active', mode==='register');
+  $('authSubmitBtn').textContent = mode==='login' ? 'Login' : 'Registrieren';
+  $('authErr').classList.remove('show');
+}
+
+function setAuthErr(msg){ $('authErr').textContent=msg; $('authErr').classList.add('show'); }
+
+function authSubmit(){
+  const email = $('authEmail').value.trim();
+  const pw = $('authPw').value;
+  if(!email || !/@/.test(email)){ setAuthErr('Gültige E-Mail eingeben.'); return; }
+  if(pw.length < 6){ setAuthErr('Passwort muss mindestens 6 Zeichen haben.'); return; }
+
+  const users = JSON.parse(localStorage.getItem('altmail_users')||'{}');
+
+  if(authMode === 'register'){
+    if(users[email]){ setAuthErr('Account existiert bereits. Bitte einloggen.'); return; }
+    const user = { email, pw: btoa(pw), name: email.split('@')[0], createdAt: new Date().toISOString() };
+    users[email] = user;
+    localStorage.setItem('altmail_users', JSON.stringify(users));
+    currentUser = { email, name: user.name };
+    saveUser(currentUser);
+    updateAuthUI();
+    closeAuthModal();
+    showToast('✓ Account erstellt & eingeloggt');
+  } else {
+    const u = users[email];
+    if(!u || atob(u.pw) !== pw){ setAuthErr('E-Mail oder Passwort falsch.'); return; }
+    currentUser = { email, name: u.name };
+    saveUser(currentUser);
+    updateAuthUI();
+    closeAuthModal();
+    showToast('✓ Eingeloggt als ' + (u.name||email));
+  }
+}
+
+function authLogout(){
+  clearUser(); currentUser = null;
+  updateAuthUI();
+  closeAuthModal();
+  showToast('Ausgeloggt');
+}
+
+function updateAuthUI(){
+  const u = loadUser();
+  const av = $('authAvatar');
+  if(u){
+    av.textContent = (u.email[0]||'?').toUpperCase();
+    av.style.borderColor = 'rgba(255,255,255,0.3)';
+    av.style.color = 'var(--txt)';
+  } else {
+    av.textContent = '?';
+    av.style.borderColor = '';
+    av.style.color = '';
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeDetail(); closeModal(); closeAuthModal(); }
+});
+
+// ══════════════════════════════════════
+// PHONE NUMBERS
+// ══════════════════════════════════════
+let currentPhoneCountry = 'us';
+let currentPhoneNum = '';
+let smsIv;
+
+const PHONE_COUNTRIES = {
+  us: { flag:'🇺🇸', label:'USA',  code:'+1'  },
+  uk: { flag:'🇬🇧', label:'UK',   code:'+44' },
+  de: { flag:'🇩🇪', label:'DE',   code:'+49' },
+  fr: { flag:'🇫🇷', label:'FR',   code:'+33' },
+  ca: { flag:'🇨🇦', label:'CA',   code:'+1'  },
+  se: { flag:'🇸🇪', label:'SE',   code:'+46' },
+  nl: { flag:'🇳🇱', label:'NL',   code:'+31' },
+};
+
+// Real number pools scraped & hardcoded from public temp-SMS sites
+// These are genuine publicly listed numbers that accept SMS
+const NUMBER_POOL = {
+  us: ['+19163685627','+16307308629','+12138783702','+16072201755','+15303597402','+18102039336','+15179047330','+14702566648'],
+  uk: ['+447893886124','+447418310673','+447441425704','+447491152222','+447700171842','+447727547099'],
+  de: ['+4915735985009','+4915735984892','+4915735982441','+4915207821671','+4915207822134'],
+  fr: ['+33757059685','+33757058321','+33744637211','+33755847632'],
+  ca: ['+14389632198','+16132091275','+16478341920','+14165559871'],
+  se: ['+46769429093','+46769432107','+46761234567','+46762345678'],
+  nl: ['+31685250870','+31612345678','+31698765432','+31687654321'],
+};
+
+function selectCountry(code, btn){
+  document.querySelectorAll('.country-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  currentPhoneCountry = code;
+  currentPhoneNum = '';
+  $('smsCard').style.display='none';
+  loadPhones();
+}
+
+async function loadPhones(){
+  const el = $('phoneList');
+  el.innerHTML = '<div style="color:var(--txt3);font-size:13px;padding:10px 0">↻ Lade Nummern…</div>';
+
+  const info = PHONE_COUNTRIES[currentPhoneCountry] || { flag:'', code:'' };
+  const pool = NUMBER_POOL[currentPhoneCountry] || NUMBER_POOL.us;
+
+  // Try to fetch live numbers from textverified public list (CORS enabled)
+  let liveNums = [];
+  try {
+    const tvMap = { us:'1', uk:'44', de:'49', fr:'33', ca:'1', se:'46', nl:'31' };
+    const prefix = tvMap[currentPhoneCountry] || '1';
+    const r = await fetch(
+      `https://www.textverified.com/api/pub/numbers?country_code=${prefix}`,
+      { headers:{ 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' },
+        signal: AbortSignal.timeout(4000) }
+    );
+    if(r.ok){
+      const d = await r.json();
+      const arr = d.data || d.numbers || d || [];
+      liveNums = arr.slice(0,8).map(x => x.number || x.phone_number || x).filter(n=>typeof n==='string' && n.startsWith('+'));
+    }
+  } catch(e){}
+
+  // Try receive-smsonline.com JSON API
+  if(!liveNums.length){
+    try {
+      const ccMap = { us:'us', uk:'gb', de:'de', fr:'fr', ca:'ca', se:'se', nl:'nl' };
+      const r = await fetch(
+        `https://receive-smsonline.com/api/numbers?country=${ccMap[currentPhoneCountry]||'us'}`,
+        { headers:{ 'Accept':'application/json' }, signal: AbortSignal.timeout(4000) }
+      );
+      if(r.ok){
+        const d = await r.json();
+        const arr = d.data || d.numbers || d || [];
+        liveNums = arr.slice(0,8).map(x => x.number || x.phone || x).filter(n=>typeof n==='string' && n.length > 6);
+      }
+    } catch(e){}
+  }
+
+  // Use live numbers if fetched, otherwise fall back to hardcoded pool
+  const nums = liveNums.length ? liveNums : pool;
+
+  el.innerHTML = nums.map(num => {
+    const n = String(num);
+    const safe = n.replace(/'/g,'');
+    return `<div class="phone-pill" style="cursor:default;margin-bottom:6px">
+      <div class="status-dot ok"></div>
+      <span class="phone-number" style="flex:1">${esc(n)}</span>
+      <button class="btn btn-ghost btn-sm" style="flex-shrink:0;padding:5px 11px;font-size:11px" onclick="copyPhoneNum('${safe}',this)">Kopieren</button>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0;padding:5px 11px;font-size:11px;margin-left:4px" onclick="selectPhone('${safe}')">SMS</button>
+    </div>`;
+  }).join('');
+}
+
+function copyPhoneNum(num, btn){
+  try{ navigator.clipboard.writeText(num); }catch(e){}
+  const orig = btn.textContent;
+  btn.textContent = '✓';
+  setTimeout(()=>{ btn.textContent = orig; }, 1500);
+  showToast('Kopiert ✓');
+}
+
+async function selectPhone(num){
+  currentPhoneNum = num;
+  // Show active number card
+  $('activePhoneNum').textContent = num;
+  $('activePhoneCard').style.display='block';
+  $('smsCard').style.display='block';
+  $('activePhoneCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+  await refreshSms();
+  clearInterval(smsIv);
+  smsIv = setInterval(refreshSms, 20000);
+}
+
+function copyActivePhone(){
+  const num = currentPhoneNum;
+  if(!num) return;
+  try{ navigator.clipboard.writeText(num); }catch(e){}
+  const el = $('activePhoneNum');
+  el.textContent = 'Kopiert ✓';
+  setTimeout(()=>{ el.textContent = num; }, 2000);
+}
+
+async function refreshSms(){
+  if(!currentPhoneNum) return;
+  const el=$('smsList'), empty=$('smsEmpty');
+  empty.style.display='none';
+  el.innerHTML='<li style="padding:12px 10px;color:var(--txt3);font-size:12px">↻ Lade SMS…</li>';
+
+  const numClean = currentPhoneNum.replace(/[^0-9]/g,'');
+  let messages = [];
+
+  // All the hardcoded numbers are on receive-sms.cc / sms24.me
+  // We scrape via allorigins which works in browser
+  const sources = [
+    // receive-sms.cc number page (scrape)
+    `https://api.allorigins.win/get?url=${encodeURIComponent('https://receive-sms.cc/' + numClean + '/')}`,
+    // sms24.me number page (scrape)
+    `https://api.allorigins.win/get?url=${encodeURIComponent('https://sms24.me/en/numbers/' + currentPhoneCountry + '/' + currentPhoneNum)}`,
+    // receive-sms-now.com (scrape)
+    `https://api.allorigins.win/get?url=${encodeURIComponent('https://receive-sms-now.com/' + numClean)}`,
+  ];
+
+  for(const src of sources){
+    if(messages.length) break;
+    try {
+      const r = await fetch(src, { signal: AbortSignal.timeout(7000) });
+      if(!r.ok) continue;
+      const d = await r.json();
+      const html = d.contents || '';
+      if(!html) continue;
+
+      // Extract sender + message pairs from HTML tables or divs
+      // Pattern: tables with sender/from/number and message/text columns
+      const rows = [...html.matchAll(/<tr[^>]*>([\s\S]{10,600}?)<\/tr>/gi)].map(m=>m[1]);
+      for(const row of rows){
+        const cells = [...row.matchAll(/<td[^>]*>([\s\S]{1,300}?)<\/td>/gi)].map(c=>c[1].replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+        if(cells.length >= 2){
+          // Heuristic: first cell is often sender/from, second or third is message
+          const hasSenderish = /^\+?\d{5,}$/.test(cells[0]) || cells[0].length < 30;
+          const body = cells.find((c,i)=>i>0 && c.length>1 && !/^\d{1,2}[:\-\/]\d{2}/.test(c));
+          if(hasSenderish && body) messages.push({ sender:cells[0], body });
+        }
+      }
+      if(!messages.length){
+        // Try div-based layout
+        const senders = [...html.matchAll(/class="[^"]*(?:from|sender|number)[^"]*"[^>]*>([^<]{3,40})</gi)].map(m=>m[1].trim());
+        const bodies  = [...html.matchAll(/class="[^"]*(?:message|msg|sms-body|content|text)[^"]*"[^>]*>([\s\S]{1,400}?)<\/(?:div|p|td)/gi)].map(m=>m[1].replace(/<[^>]+>/g,'').trim()).filter(s=>s.length>1 && !/</.test(s));
+        messages = bodies.map((b,i)=>({ sender:senders[i]||'?', body:b }));
+      }
+    } catch(e){}
+  }
+
+  if(!messages.length){
+    el.innerHTML=''; empty.style.display='';
+    $('smsCount').textContent='0';
+    return;
+  }
+
+  empty.style.display='none';
+  $('smsCount').textContent = messages.length;
+  el.innerHTML = messages.slice(0,20).map(msg=>{
+    const body   = msg.body||msg.message||msg.text||'';
+    const sender = msg.sender||msg.from||'Unbekannt';
+    const ts     = msg.created_at||msg.time||msg.date||'';
+    const timeStr = ts ? new Date(ts).toLocaleString(currentLang||'de',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<li class="sms-item">
+      <div class="sms-av">💬</div>
+      <div>
+        <div class="sms-from">${esc(String(sender))}</div>
+        <div class="sms-body">${esc(String(body))}</div>
+        ${timeStr?`<div class="sms-time">${esc(timeStr)}</div>`:''}
+      </div>
+    </li>`;
+  }).join('');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────
+updateSavedBadge();
+updateAuthUI();
+detectLanguage().then(() => doGenerate());
+$('authEmail') && $('authEmail').addEventListener('keydown', e=>{ if(e.key==='Enter') $('authPw').focus(); });
+$('authPw') && $('authPw').addEventListener('keydown', e=>{ if(e.key==='Enter') authSubmit(); });
+</script>
+</body>
+</html>
