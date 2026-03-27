@@ -1,881 +1,387 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>AltMail</title>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--font:'Geist',system-ui,sans-serif;--mono:'Geist Mono',monospace;--r:14px;--r-sm:10px;--r-lg:20px;--sidebar-w:200px;}
+[data-theme="dark"]{--bg:#0a0a0a;--s1:#111;--s2:#181818;--s3:#202020;--brd:rgba(255,255,255,0.07);--brd-hi:rgba(255,255,255,0.15);--brd-act:rgba(255,255,255,0.35);--txt:#f0f0f0;--txt2:#a0a0a0;--txt3:#606060;--glow:rgba(255,255,255,0.06);--btn-bg:#f0f0f0;--btn-clr:#0a0a0a;--btn-hover:#d0d0d0;--shadow-sm:0 4px 24px rgba(0,0,0,.3);--shadow-lg:0 20px 60px rgba(0,0,0,.6);--pwned:#f87171;--safe:#4ade80;}
+[data-theme="light"]{--bg:#f4f4f4;--s1:#fff;--s2:#f0f0f0;--s3:#e8e8e8;--brd:rgba(0,0,0,0.08);--brd-hi:rgba(0,0,0,0.15);--brd-act:rgba(0,0,0,0.4);--txt:#111;--txt2:#555;--txt3:#999;--glow:rgba(0,0,0,0.04);--btn-bg:#111;--btn-clr:#fff;--btn-hover:#333;--shadow-sm:0 4px 24px rgba(0,0,0,.08);--shadow-lg:0 20px 60px rgba(0,0,0,.15);--pwned:#dc2626;--safe:#16a34a;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);-webkit-font-smoothing:antialiased;display:flex;overflow:hidden;transition:background .3s,color .3s;}
+#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:1;transition:opacity .5s;}
+[data-theme="light"] #bg-canvas{opacity:.3;}
+.sidebar{position:relative;z-index:10;width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;overflow-y:auto;overflow-x:hidden;background:var(--s1);border-right:1px solid var(--brd);display:flex;flex-direction:column;gap:2px;padding:16px 10px;flex-shrink:0;transition:width .25s ease,min-width .25s ease;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px;}
+.sidebar-logo{display:flex;align-items:center;gap:8px;padding:8px 10px 16px;margin-bottom:4px;border-bottom:1px solid var(--brd);}
+.sidebar-logo-txt{font-size:18px;font-weight:700;letter-spacing:-0.8px;color:var(--txt);white-space:nowrap;overflow:hidden;}
+.logo-dot{color:var(--txt3);}
+.sidebar-section-label{font-size:10px;font-weight:500;color:var(--txt3);letter-spacing:.6px;text-transform:uppercase;padding:10px 10px 4px;white-space:nowrap;overflow:hidden;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background .15s,color .15s;color:var(--txt3);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;border:none;background:none;font-family:var(--font);width:100%;text-align:left;min-height:40px;}
+.nav-item:hover{background:var(--s2);color:var(--txt2);}
+.nav-item.active{background:var(--s3);color:var(--txt);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:600;background:var(--s3);color:var(--txt3);border-radius:100px;padding:1px 7px;flex-shrink:0;}
+.nav-item.active .nav-badge{background:var(--brd-hi);}
+.sidebar-bottom{margin-top:auto;padding-top:12px;border-top:1px solid var(--brd);}
+.main{flex:1;min-width:0;height:100vh;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;}
+.main::-webkit-scrollbar{width:4px;}
+.main::-webkit-scrollbar-thumb{background:var(--s3);border-radius:4px;}
+.main-inner{max-width:680px;margin:0 auto;padding:32px 20px 80px;}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--brd);z-index:50;padding:6px 4px env(safe-area-inset-bottom,0);flex-direction:row;align-items:center;gap:2px;}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:var(--r-sm);cursor:pointer;color:var(--txt3);font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font);min-height:52px;justify-content:center;transition:color .15s;}
+.mob-nav-item.active{color:var(--txt);}
+.mob-nav-item svg{width:18px;height:18px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.header-actions{display:flex;align-items:center;gap:8px;}
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:var(--r-lg);padding:20px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+.card-label{font-size:11px;font-weight:500;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;font-family:var(--font);font-size:13px;font-weight:500;border-radius:var(--r);border:1px solid var(--brd);background:var(--s2);color:var(--txt2);cursor:pointer;transition:all .18s;white-space:nowrap;letter-spacing:-.2px;min-height:44px;-webkit-appearance:none;appearance:none;touch-action:manipulation;}
+.btn:hover{background:var(--s3);border-color:var(--brd-hi);color:var(--txt);}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.btn:active:not(:disabled){transform:scale(.97);}
+.btn-primary{background:var(--btn-bg);color:var(--btn-clr);border-color:transparent;font-weight:600;}
+.btn-primary:hover:not(:disabled){background:var(--btn-hover);color:var(--btn-clr);}
+.btn-ghost{background:transparent;border-color:var(--brd);color:var(--txt3);}
+.btn-ghost:hover{border-color:var(--brd-hi);color:var(--txt2);background:var(--glow);}
+.btn-danger{background:transparent;border-color:var(--brd);color:var(--txt3);}
+.btn-danger:hover{border-color:rgba(248,113,113,.4);color:#f87171;background:rgba(248,113,113,.05);}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:var(--r-sm);min-height:38px;}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;}
+input,textarea,select{font-family:var(--font);font-size:16px;color:var(--txt);background:var(--s2);border:1px solid var(--brd);border-radius:var(--r-sm);padding:12px 14px;outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none;appearance:none;box-sizing:border-box;}
+input:focus,textarea:focus{border-color:var(--brd-act);}
+input::placeholder,textarea::placeholder{color:var(--txt3);}
+textarea{resize:vertical;min-height:120px;line-height:1.6;}
+.email-row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;}
+.email-pill{flex:1;min-width:160px;display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:12px 16px;cursor:pointer;transition:border-color .2s,background .2s;user-select:none;touch-action:manipulation;}
+.email-pill:hover{border-color:var(--brd-hi);background:var(--s3);}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--txt3);transition:background .3s;}
+.status-dot.ok{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.35);}
+.status-dot.loading{background:var(--txt3);animation:sdot .8s infinite;}
+.status-dot.err{background:#f87171;}
+@keyframes sdot{0%,100%{opacity:.3}50%{opacity:1}}
+.email-addr{font-family:var(--mono);font-size:13px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;letter-spacing:-.3px;}
+.email-copy-hint{font-size:11px;color:var(--txt3);flex-shrink:0;white-space:nowrap;}
+.timer-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);}
+.section-label{font-size:11px;font-weight:500;color:var(--txt3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px;}
+.timer-opts{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.t-chip{padding:0 14px;height:36px;font-size:12px;font-weight:500;font-family:var(--font);background:transparent;border:1px solid var(--brd);border-radius:100px;color:var(--txt3);cursor:pointer;transition:all .15s;touch-action:manipulation;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.t-chip:hover{border-color:var(--brd-hi);color:var(--txt2);background:var(--s2);}
+.t-chip.on{background:var(--btn-bg);color:var(--btn-clr);border-color:transparent;font-weight:600;}
+.custom-wrap{display:flex;height:36px;}
+.t-input{width:52px;font-size:12px;border-right:none;border-radius:100px 0 0 100px;text-align:center;height:36px;padding:0 8px;box-sizing:border-box;}
+.t-ok-btn{padding:0 12px;font-size:12px;font-weight:500;font-family:var(--font);background:transparent;border:1px solid var(--brd);border-radius:0 100px 100px 0;color:var(--txt3);cursor:pointer;transition:all .15s;height:36px;display:inline-flex;align-items:center;justify-content:center;touch-action:manipulation;white-space:nowrap;}
+.t-ok-btn:hover{border-color:var(--brd-hi);color:var(--txt2);background:var(--s2);}
+.timer-bar-wrap{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.timer-bar{flex:1;height:2px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.timer-bar-fill{height:100%;background:linear-gradient(90deg,var(--txt3),var(--txt2));border-radius:2px;transition:width 1s linear;}
+.timer-readout{font-family:var(--mono);font-size:12px;color:var(--txt3);min-width:56px;text-align:right;}
+.status-line{display:flex;align-items:center;gap:7px;margin-top:10px;}
+.sl-dot{width:5px;height:5px;border-radius:50%;background:var(--txt3);flex-shrink:0;}
+.sl-dot.ok{background:#fff;box-shadow:0 0 6px rgba(255,255,255,.3);}
+.sl-dot.err{background:#f87171;animation:sdot 1s infinite;}
+.sl-dot.loading{animation:sdot .6s infinite;}
+.sl-txt{font-size:12px;color:var(--txt3);}
+.refresh-ring-wrap{display:inline-flex;align-items:center;gap:6px;margin-left:auto;}
+.refresh-ring svg{width:14px;height:14px;transform:rotate(-90deg);}
+.refresh-ring circle{fill:none;stroke:var(--txt3);stroke-width:2;stroke-linecap:round;stroke-dasharray:38;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear;}
+.refresh-ring-label{font-family:var(--mono);font-size:11px;color:var(--txt3);min-width:18px;text-align:right;}
+.inbox-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.inbox-title-row{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--txt);letter-spacing:-.3px;}
+.inbox-pill{font-size:11px;font-weight:600;color:var(--txt3);background:var(--s3);border:1px solid var(--brd);border-radius:100px;padding:2px 9px;}
+.msg-list{list-style:none;}
+.msg-item{display:flex;align-items:flex-start;gap:12px;padding:14px 10px;border-top:1px solid var(--brd);cursor:pointer;border-radius:var(--r-sm);transition:background .15s;margin:0 -10px;animation:fadeUp .2s ease;touch-action:manipulation;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg-item:hover{background:var(--glow);}
+.msg-unread-dot{width:6px;height:6px;border-radius:50%;background:#fff;flex-shrink:0;margin-top:15px;}
+.msg-av{width:36px;height:36px;border-radius:10px;background:var(--s3);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--txt2);flex-shrink:0;}
+.msg-content{flex:1;min-width:0;}
+.msg-row1{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px;}
+.msg-from{font-size:13px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.2px;}
+.msg-time{font-family:var(--mono);font-size:11px;color:var(--txt3);flex-shrink:0;}
+.msg-subject{font-size:13px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
+.msg-preview{font-size:12px;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.empty-view{padding:48px 20px;text-align:center;}
+.empty-icon{width:56px;height:56px;border-radius:16px;background:var(--s2);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;}
+.empty-view h3{font-size:15px;font-weight:600;color:var(--txt2);margin-bottom:6px;letter-spacing:-.3px;}
+.empty-view p{font-size:13px;color:var(--txt3);line-height:1.6;}
+.detail-card{display:none;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow-sm);animation:fadeUp .2s ease;}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px;border-bottom:1px solid var(--brd);}
+.detail-from{font-size:15px;font-weight:600;color:var(--txt);letter-spacing:-.3px;margin-bottom:4px;}
+.detail-subject{font-size:13px;color:var(--txt2);margin-bottom:5px;}
+.detail-meta{font-family:var(--mono);font-size:11px;color:var(--txt3);}
+.detail-body{padding:20px;max-height:420px;overflow-y:auto;}
+.links-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:8px;}
+.link-card{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r-sm);margin-bottom:6px;text-decoration:none;transition:background .15s,border-color .15s;border:1px solid var(--brd);background:var(--s2);}
+.link-card:hover{background:var(--s3);border-color:var(--brd-hi);}
+.link-card.confirm{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);}
+.link-card.confirm:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.35);}
+.link-confirm-badge{font-size:10px;font-weight:600;color:#0a0a0a;background:#fff;padding:2px 7px;border-radius:100px;flex-shrink:0;}
+.link-url{font-family:var(--mono);font-size:12px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.link-card.confirm .link-url{color:var(--txt);}
+.link-arrow{font-size:13px;color:var(--txt3);flex-shrink:0;}
+.body-divider{border:none;border-top:1px solid var(--brd);margin:16px 0;}
+.email-body-text{font-size:13px;line-height:1.8;color:var(--txt2);white-space:pre-wrap;word-break:break-word;font-family:var(--mono);}
+.saved-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:8px;transition:border-color .15s;animation:fadeUp .15s ease;}
+.saved-item:hover{border-color:var(--brd-hi);}
+.saved-info{flex:1;min-width:0;}
+.saved-addr{font-family:var(--mono);font-size:13px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px;}
+.saved-meta{font-size:12px;color:var(--txt3);}
+.saved-name-badge{display:inline-block;font-size:11px;color:var(--txt3);background:var(--s3);border:1px solid var(--brd);border-radius:100px;padding:2px 9px;margin-right:6px;}
+.saved-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.saved-empty{text-align:center;padding:48px 20px;color:var(--txt3);font-size:14px;line-height:1.7;}
+.whoami-hero{display:flex;flex-direction:column;align-items:center;padding:28px 20px 20px;text-align:center;border-bottom:1px solid var(--brd);margin-bottom:20px;}
+.whoami-avatar{width:72px;height:72px;border-radius:50%;background:var(--s3);border:2px solid var(--brd-hi);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--txt);margin-bottom:14px;}
+.whoami-name{font-size:20px;font-weight:600;color:var(--txt);letter-spacing:-.5px;margin-bottom:4px;}
+.whoami-sub{font-family:var(--mono);font-size:12px;color:var(--txt3);}
+.whoami-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.whoami-stat{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:14px 16px;}
+.whoami-stat-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--txt);letter-spacing:-1px;margin-bottom:4px;line-height:1;}
+.whoami-stat-lbl{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;}
+.whoami-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--brd);}
+.whoami-row:last-child{border-bottom:none;}
+.whoami-row-lbl{font-size:12px;color:var(--txt3);}
+.whoami-row-val{font-family:var(--mono);font-size:12px;color:var(--txt2);text-align:right;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.whoami-row-val.ok{color:#fff;}
+.whoami-row-val.err{color:#f87171;}
+.pwned-hero{text-align:center;padding:20px 0 28px;}
+.pwned-hero h2{font-size:20px;font-weight:600;letter-spacing:-.5px;color:var(--txt);margin-bottom:8px;}
+.pwned-hero p{font-size:13px;color:var(--txt3);line-height:1.6;max-width:400px;margin:0 auto;}
+.pwned-input-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.pwned-input-row input{flex:1;min-width:180px;}
+.pwned-result{display:none;border-radius:var(--r-lg);padding:20px;border:1px solid var(--brd);animation:fadeUp .3s ease;}
+.pwned-result.pwned{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.05);}
+.pwned-result.safe{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05);}
+.pwned-status-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.pwned-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.pwned-icon.bad{background:rgba(248,113,113,.15);}
+.pwned-icon.good{background:rgba(74,222,128,.15);}
+.pwned-status-txt h3{font-size:16px;font-weight:600;color:var(--txt);letter-spacing:-.3px;margin-bottom:3px;}
+.pwned-status-txt p{font-size:13px;color:var(--txt3);}
+.breach-list{list-style:none;}
+.breach-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--brd);}
+.breach-logo{width:36px;height:36px;border-radius:8px;background:var(--s3);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--txt2);flex-shrink:0;font-family:var(--mono);}
+.breach-info{flex:1;min-width:0;}
+.breach-name{font-size:13px;font-weight:600;color:var(--txt);letter-spacing:-.2px;margin-bottom:3px;}
+.breach-meta{font-size:12px;color:var(--txt3);margin-bottom:4px;}
+.breach-types{display:flex;flex-wrap:wrap;gap:4px;}
+.breach-type{font-size:10px;font-weight:500;background:var(--s3);color:var(--txt3);border:1px solid var(--brd);border-radius:100px;padding:2px 8px;}
+.pwned-loading{text-align:center;padding:32px 20px;color:var(--txt3);}
+.pw-strength-bar{height:3px;border-radius:3px;margin-top:8px;transition:all .3s;background:var(--s3);}
+.pw-strength-bar.weak{background:#f87171;}
+.pw-strength-bar.medium{background:#fbbf24;}
+.pw-strength-bar.strong{background:#4ade80;}
+.pw-result-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;margin-top:10px;}
+.pw-result-pill.pwned-pill{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+.pw-result-pill.safe-pill{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);}
+.from-addr-row{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r-sm);margin-bottom:12px;}
+.from-label{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;}
+.from-addr{font-family:var(--mono);font-size:13px;color:var(--txt);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sent-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:8px;transition:border-color .15s;animation:fadeUp .15s ease;}
+.sent-item:hover{border-color:var(--brd-hi);}
+.sent-info{flex:1;min-width:0;}
+.sent-to{font-size:13px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;}
+.sent-subj{font-size:12px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;}
+.sent-meta{font-size:11px;color:var(--txt3);font-family:var(--mono);}
+.sent-actions{display:flex;gap:6px;flex-shrink:0;}
+.send-status{display:none;padding:12px 14px;border-radius:var(--r-sm);font-size:13px;margin-top:8px;border:1px solid var(--brd);}
+.send-status.success{display:flex;align-items:center;gap:8px;background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.3);color:#4ade80;}
+.send-status.error{display:block;background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.3);color:#f87171;}
+.send-status.loading-status{display:flex;align-items:center;gap:8px;background:var(--s2);color:var(--txt3);}
 
-:root {
-  --bg:       #0a0a0a;
-  --s1:       #111111;
-  --s2:       #181818;
-  --s3:       #202020;
-  --brd:      rgba(255,255,255,0.07);
-  --brd-hi:   rgba(255,255,255,0.15);
-  --brd-act:  rgba(255,255,255,0.35);
-  --txt:      #f0f0f0;
-  --txt2:     #a0a0a0;
-  --txt3:     #606060;
-  --glow:     rgba(255,255,255,0.06);
-  --r:        14px;
-  --r-sm:     10px;
-  --r-lg:     20px;
-  --font:     'Geist', system-ui, sans-serif;
-  --mono:     'Geist Mono', monospace;
-}
+/* Mailjet Info Banner */
+.mailjet-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#fff;background:linear-gradient(135deg,#ff6e42,#f7601e);border-radius:100px;padding:3px 9px;letter-spacing:.3px;vertical-align:middle;margin-left:6px;}
 
-body {
-  background: var(--bg);
-  color: var(--txt);
-  font-family: var(--font);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
+.info-box{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--txt3);line-height:1.6;margin-bottom:12px;}
+.info-box strong{color:#4ade80;}
+.info-box.warn{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.2);}
+.info-box.warn strong{color:#fbbf24;}
+.info-box.mj{background:rgba(255,110,66,.06);border-color:rgba(255,110,66,.2);}
+.info-box.mj strong{color:#ff6e42;}
 
-body::before {
-  content: '';
-  position: fixed;
-  top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 500px;
-  background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
+/* Mailjet From-field */
+.from-select{font-family:var(--mono);font-size:13px;color:var(--txt);background:var(--s2);border:1px solid var(--brd);border-radius:var(--r-sm);padding:10px 14px;width:100%;margin-bottom:10px;}
 
-.wrap {
-  position: relative;
-  z-index: 1;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 40px 20px 80px;
-}
+/* PHONE */
+.country-chip{padding:8px 14px;font-size:12px;font-weight:500;background:var(--s2);border:1px solid var(--brd);border-radius:100px;color:var(--txt3);cursor:pointer;transition:all .15s;font-family:var(--font);min-height:36px;touch-action:manipulation;}
+.country-chip:hover{border-color:var(--brd-hi);color:var(--txt2);}
+.country-chip.on{background:var(--btn-bg);color:var(--btn-clr);border-color:transparent;font-weight:600;}
+.phone-select-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.phone-pill{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:12px 16px;margin-bottom:6px;transition:border-color .2s;}
+.phone-number{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--txt);flex:1;letter-spacing:.5px;}
+.sms-item{display:flex;align-items:flex-start;gap:10px;padding:14px 10px;border-top:1px solid var(--brd);border-radius:var(--r-sm);transition:background .15s;margin:0 -10px;animation:fadeUp .2s ease;}
+.sms-item:hover{background:var(--glow);}
+.sms-av{width:34px;height:34px;border-radius:9px;background:var(--s3);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sms-from{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:3px;}
+.sms-body{font-size:13px;color:var(--txt2);line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.sms-time{font-family:var(--mono);font-size:10px;color:var(--txt3);margin-top:4px;}
+.affiliate-section{margin-top:40px;padding-top:28px;border-top:1px solid var(--brd);}
+.affiliate-label{font-size:10px;font-weight:500;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;text-align:center;margin-bottom:14px;}
+.affiliate-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.affiliate-card{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);padding:14px 16px;text-decoration:none;color:var(--txt);cursor:pointer;transition:border-color .18s,background .18s,transform .15s;position:relative;overflow:hidden;touch-action:manipulation;}
+.affiliate-card:hover{border-color:var(--brd-hi);background:var(--s2);transform:translateY(-1px);}
+.affiliate-icon{width:32px;height:32px;border-radius:8px;background:var(--s3);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--txt2);}
+.affiliate-info{flex:1;min-width:0;}
+.affiliate-name{font-size:12px;font-weight:600;color:var(--txt);letter-spacing:-.2px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.affiliate-desc{font-size:11px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.affiliate-arrow{font-size:11px;color:var(--txt3);flex-shrink:0;}
+.affiliate-badge{position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;color:var(--txt3);background:var(--s3);border:1px solid var(--brd);border-radius:100px;padding:1px 6px;letter-spacing:.4px;text-transform:uppercase;}
+.online-counter{position:fixed;bottom:16px;right:16px;display:flex;align-items:center;gap:7px;background:var(--s1);border:1px solid var(--brd);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:500;color:var(--txt3);box-shadow:var(--shadow-sm);z-index:100;user-select:none;transition:all .2s;}
+.online-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.5);animation:pg 2s infinite;flex-shrink:0;}
+@keyframes pg{0%,100%{opacity:1}50%{opacity:.7;box-shadow:0 0 12px rgba(74,222,128,.8)}}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:300;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--s1);border:1px solid var(--brd-hi);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:28px 24px max(24px, env(safe-area-inset-bottom));width:100%;max-width:100%;box-shadow:var(--shadow-lg);animation:slideUp .25s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(min-width:640px){.modal-overlay{align-items:center;padding:20px;}.modal-box{border-radius:var(--r-lg);max-width:420px;animation:fadeUp .2s ease;}}
+.modal-handle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:16px;font-weight:600;color:var(--txt);letter-spacing:-.4px;margin-bottom:6px;}
+.modal-sub{font-family:var(--mono);font-size:12px;color:var(--txt3);margin-bottom:20px;overflow:hidden;text-overflow:ellipsis;}
+.modal-input{margin-bottom:12px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.modal-tabs{display:flex;gap:2px;background:var(--s2);border-radius:9px;padding:3px;margin-bottom:18px;}
+.modal-tab{flex:1;padding:9px;font-size:13px;font-weight:500;color:var(--txt3);background:none;border:none;border-radius:7px;cursor:pointer;font-family:var(--font);transition:all .18s;min-height:40px;touch-action:manipulation;}
+.modal-tab.active{background:var(--s3);color:var(--txt);box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.modal-err{font-size:12px;color:#f87171;margin-bottom:10px;display:none;}
+.modal-err.show{display:block;}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 14px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r-sm);}
+.user-info-name{font-size:14px;font-weight:600;color:var(--txt);}
+.user-info-sub{font-size:12px;color:var(--txt3);}
+.auth-avatar{width:32px;height:32px;border-radius:50%;background:var(--s3);border:1px solid var(--brd-hi);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--txt2);cursor:pointer;flex-shrink:0;transition:border-color .2s;min-height:32px;touch-action:manipulation;}
+.auth-avatar:hover{border-color:var(--brd-act);}
+.header-chip{font-size:11px;font-weight:500;color:var(--txt3);background:var(--s2);border:1px solid var(--brd);border-radius:100px;padding:4px 12px;letter-spacing:.3px;white-space:nowrap;}
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);background:var(--s2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;color:var(--txt2);min-height:36px;touch-action:manipulation;}
+.theme-toggle:hover{border-color:var(--brd-hi);background:var(--s3);transform:rotate(20deg);color:var(--txt);}
+.theme-toggle svg{width:16px;height:16px;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--s1);border:1px solid var(--brd-hi);color:var(--txt2);padding:11px 20px;border-radius:100px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:all .3s cubic-bezier(.34,1.3,.64,1);white-space:nowrap;box-shadow:var(--shadow-sm);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .7s linear infinite;display:inline-block;}
 
-/* ── Header ── */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 52px;
-}
-
-.logo {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: var(--txt);
-}
-.logo-dot { color: var(--txt3); }
-
-.header-chip {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--txt3);
-  background: var(--s2);
-  border: 1px solid var(--brd);
-  border-radius: 100px;
-  padding: 4px 12px;
-  letter-spacing: 0.3px;
-}
-
-/* ── Hero ── */
-.hero {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.hero h1 {
-  font-size: 42px;
-  font-weight: 300;
-  letter-spacing: -2px;
-  line-height: 1.1;
-  color: var(--txt);
-  margin-bottom: 14px;
-}
-.hero h1 strong { font-weight: 600; }
-.hero p {
-  font-size: 15px;
-  color: var(--txt3);
-  line-height: 1.6;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-/* ── Tabs ── */
-.tabs {
-  display: flex;
-  background: var(--s1);
-  border: 1px solid var(--brd);
-  border-radius: 12px;
-  padding: 4px;
-  gap: 2px;
-  margin-bottom: 16px;
-}
-.tab {
-  flex: 1;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--txt3);
-  background: none;
-  border: none;
-  border-radius: 9px;
-  cursor: pointer;
-  transition: all .2s;
-  font-family: var(--font);
-  letter-spacing: -0.2px;
-}
-.tab:hover { color: var(--txt2); }
-.tab.active {
-  background: var(--s3);
-  color: var(--txt);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
-}
-.tab-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.12);
-  color: var(--txt2);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 100px;
-  margin-left: 6px;
-  min-width: 18px;
-}
-
-/* ── Panel ── */
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* ── Card ── */
-.card {
-  background: var(--s1);
-  border: 1px solid var(--brd);
-  border-radius: var(--r-lg);
-  padding: 20px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 24px rgba(0,0,0,0.3);
-}
-
-.card-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--txt3);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-/* ── Email display ── */
-.email-row {
-  display: flex;
-  gap: 8px;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
-
-.email-pill {
-  flex: 1;
-  min-width: 200px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--s2);
-  border: 1px solid var(--brd);
-  border-radius: var(--r);
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-  position: relative;
-  overflow: hidden;
-}
-.email-pill:hover { border-color: var(--brd-hi); background: var(--s3); }
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--txt3);
-  transition: background .3s;
-}
-.status-dot.ok { background: #e0e0e0; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
-.status-dot.loading { background: var(--txt3); animation: sdot .8s infinite; }
-.status-dot.err { background: #888; }
-@keyframes sdot { 0%,100%{opacity:.3} 50%{opacity:1} }
-
-.email-addr {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--txt);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  letter-spacing: -0.3px;
-}
-.email-copy-hint { font-size: 11px; color: var(--txt3); flex-shrink: 0; }
-/* copy-flash removed — text swap used instead */
-
-.btn-group { display: flex; gap: 8px; }
-
-/* ── Buttons ── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 11px 18px;
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: var(--r);
-  border: 1px solid var(--brd);
-  background: var(--s2);
-  color: var(--txt2);
-  cursor: pointer;
-  transition: all .18s;
-  white-space: nowrap;
-  letter-spacing: -0.2px;
-}
-.btn:hover { background: var(--s3); border-color: var(--brd-hi); color: var(--txt); }
-.btn:disabled { opacity: .3; cursor: not-allowed; }
-.btn:active:not(:disabled) { transform: scale(.98); }
-
-.btn-primary {
-  background: var(--txt);
-  color: var(--bg);
-  border-color: transparent;
-  font-weight: 600;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 4px 14px rgba(255,255,255,0.08);
-}
-.btn-primary:hover:not(:disabled) {
-  background: #e8e8e8;
-  color: #000;
-  box-shadow: 0 4px 20px rgba(255,255,255,0.15);
-}
-
-.btn-ghost {
-  background: transparent;
-  border-color: var(--brd);
-  color: var(--txt3);
-}
-.btn-ghost:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--glow); }
-
-.btn-sm { padding: 7px 13px; font-size: 12px; border-radius: var(--r-sm); }
-
-.btn-danger {
-  background: transparent;
-  border-color: var(--brd);
-  color: var(--txt3);
-}
-.btn-danger:hover { border-color: rgba(255,80,80,0.4); color: #ff6060; background: rgba(255,60,60,0.05); }
-
-/* ── Timer ── */
-.timer-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--brd);
-}
-.section-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--txt3);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.timer-opts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-}
-.t-chip {
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: var(--font);
-  background: transparent;
-  border: 1px solid var(--brd);
-  border-radius: 100px;
-  color: var(--txt3);
-  cursor: pointer;
-  transition: all .15s;
-}
-.t-chip:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--s2); }
-.t-chip.on {
-  background: var(--txt);
-  color: var(--bg);
-  border-color: transparent;
-  font-weight: 600;
-}
-
-/* custom time input — no spinners, clean pill */
-.custom-wrap { display: flex; align-items: center; gap: 0; }
-.t-input {
-  width: 56px;
-  background: transparent;
-  border: 1px solid var(--brd);
-  border-right: none;
-  border-radius: 100px 0 0 100px;
-  color: var(--txt);
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 5px 10px;
-  outline: none;
-  text-align: center;
-  transition: border-color .15s;
-  -moz-appearance: textfield;
-}
-.t-input::-webkit-outer-spin-button,
-.t-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.t-input:focus { border-color: var(--brd-act); }
-.t-input::placeholder { color: var(--txt3); }
-.t-ok-btn {
-  padding: 5px 11px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: var(--font);
-  background: transparent;
-  border: 1px solid var(--brd);
-  border-radius: 0 100px 100px 0;
-  color: var(--txt3);
-  cursor: pointer;
-  transition: all .15s;
-}
-.t-ok-btn:hover { border-color: var(--brd-hi); color: var(--txt2); background: var(--s2); }
-
-.timer-bar-wrap { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-.timer-bar { flex: 1; height: 1px; background: var(--s3); border-radius: 2px; overflow: hidden; }
-.timer-bar-fill {
-  height: 100%;
-  background: var(--txt3);
-  border-radius: 2px;
-  transition: width 1s linear;
-}
-.timer-readout { font-family: var(--mono); font-size: 12px; color: var(--txt3); min-width: 56px; text-align: right; }
-
-.status-line { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
-.sl-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--txt3); flex-shrink: 0;
-  transition: background .3s, box-shadow .3s;
-}
-.sl-dot.ok { background: #c8c8c8; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
-.sl-dot.err { background: #666; animation: sdot 1s infinite; }
-.sl-dot.loading { animation: sdot .6s infinite; }
-.sl-txt { font-size: 12px; color: var(--txt3); }
-
-/* ── Inbox ── */
-.inbox-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.inbox-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--txt);
-  letter-spacing: -0.3px;
-}
-.inbox-pill {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--txt3);
-  background: var(--s3);
-  border: 1px solid var(--brd);
-  border-radius: 100px;
-  padding: 2px 9px;
-}
-
-.msg-list { list-style: none; }
-.msg-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 10px;
-  border-top: 1px solid var(--brd);
-  cursor: pointer;
-  border-radius: var(--r-sm);
-  transition: background .15s;
-  margin: 0 -10px;
-}
-.msg-item:hover { background: var(--glow); }
-
-.msg-av {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: var(--s3);
-  border: 1px solid var(--brd);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--txt2);
-  flex-shrink: 0;
-}
-.msg-content { flex: 1; min-width: 0; }
-.msg-row1 {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 3px;
-}
-.msg-from {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--txt);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: -0.2px;
-}
-.msg-time { font-family: var(--mono); font-size: 11px; color: var(--txt3); flex-shrink: 0; }
-.msg-subject { font-size: 13px; color: var(--txt2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
-.msg-preview { font-size: 12px; color: var(--txt3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.empty-view { padding: 48px 20px; text-align: center; }
-.empty-icon-wrap {
-  width: 56px; height: 56px;
-  border-radius: 16px;
-  background: var(--s2);
-  border: 1px solid var(--brd);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-  font-size: 22px;
-}
-.empty-view h3 { font-size: 15px; font-weight: 600; color: var(--txt2); margin-bottom: 6px; letter-spacing: -0.3px; }
-.empty-view p { font-size: 13px; color: var(--txt3); line-height: 1.6; }
-
-/* ── Detail ── */
-.detail-card {
-  display: none;
-  background: var(--s1);
-  border: 1px solid var(--brd);
-  border-radius: var(--r-lg);
-  margin-bottom: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-}
-.detail-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 20px;
-  border-bottom: 1px solid var(--brd);
-}
-.detail-from { font-size: 15px; font-weight: 600; color: var(--txt); letter-spacing: -0.3px; margin-bottom: 4px; }
-.detail-subject { font-size: 13px; color: var(--txt2); margin-bottom: 5px; }
-.detail-meta { font-family: var(--mono); font-size: 11px; color: var(--txt3); }
-.detail-body { padding: 20px; max-height: 520px; overflow-y: auto; }
-
-.links-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--txt3);
-  margin-bottom: 8px;
-}
-.link-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border-radius: var(--r-sm);
-  margin-bottom: 6px;
-  text-decoration: none;
-  transition: background .15s, border-color .15s;
-  cursor: pointer;
-  border: 1px solid var(--brd);
-  background: var(--s2);
-}
-.link-card:hover { background: var(--s3); border-color: var(--brd-hi); }
-.link-card.confirm { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
-.link-card.confirm:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.3); }
-.link-confirm-badge {
-  font-size: 10px; font-weight: 600;
-  color: var(--bg); background: var(--txt);
-  padding: 2px 7px; border-radius: 100px;
-  flex-shrink: 0; letter-spacing: 0.3px;
-}
-.link-url { font-family: var(--mono); font-size: 12px; color: var(--txt2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.link-card.confirm .link-url { color: var(--txt); }
-.link-arrow { font-size: 13px; color: var(--txt3); flex-shrink: 0; }
-.link-card.confirm .link-arrow { color: var(--txt2); }
-
-.body-divider { border: none; border-top: 1px solid var(--brd); margin: 16px 0; }
-.email-body-text { font-size: 13px; line-height: 1.8; color: var(--txt2); white-space: pre-wrap; word-break: break-word; font-family: var(--mono); }
-
-/* ── Saved ── */
-.saved-empty { text-align: center; padding: 48px 20px; color: var(--txt3); font-size: 14px; line-height: 1.7; }
-.saved-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--s2);
-  border: 1px solid var(--brd);
-  border-radius: var(--r);
-  margin-bottom: 8px;
-  transition: border-color .15s;
-}
-.saved-item:hover { border-color: var(--brd-hi); }
-.saved-info { flex: 1; min-width: 0; }
-.saved-addr { font-family: var(--mono); font-size: 13px; color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
-.saved-meta { font-size: 12px; color: var(--txt3); }
-.saved-name-badge {
-  display: inline-block;
-  font-size: 11px; color: var(--txt3);
-  background: var(--s3); border: 1px solid var(--brd);
-  border-radius: 100px; padding: 2px 9px; margin-right: 6px;
-}
-.saved-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-/* ── Modal ── */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.open { display: flex; }
-.modal-box {
-  background: var(--s1);
-  border: 1px solid var(--brd-hi);
-  border-radius: var(--r-lg);
-  padding: 28px;
-  max-width: 400px;
-  width: 100%;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.06) inset;
-}
-.modal-title { font-size: 16px; font-weight: 600; color: var(--txt); letter-spacing: -0.4px; margin-bottom: 6px; }
-.modal-sub { font-family: var(--mono); font-size: 12px; color: var(--txt3); margin-bottom: 20px; overflow: hidden; text-overflow: ellipsis; }
-.modal-input {
-  width: 100%;
-  background: var(--s2);
-  border: 1px solid var(--brd);
-  border-radius: var(--r-sm);
-  color: var(--txt);
-  font-family: var(--font);
-  font-size: 14px;
-  padding: 12px 14px;
-  outline: none;
-  margin-bottom: 16px;
-  transition: border-color .15s;
-}
-.modal-input:focus { border-color: var(--brd-act); }
-.modal-input::placeholder { color: var(--txt3); }
-.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%) translateY(70px);
-  background: var(--s2);
-  border: 1px solid var(--brd-hi);
-  color: var(--txt2);
-  padding: 11px 20px;
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 500;
-  z-index: 9999;
-  opacity: 0;
-  transition: all .3s cubic-bezier(.34,1.3,.64,1);
-  white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ── Spinner ── */
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin { animation: spin .7s linear infinite; display: inline-block; }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 4px; }
-
-/* ══════════════════════════════════════
-   RESPONSIVE SCALING
-══════════════════════════════════════ */
-
-/* Large desktop (1200px+) */
-@media (min-width: 1200px) {
-  .wrap { max-width: 760px; padding: 56px 32px 100px; }
-  .hero h1 { font-size: 52px; letter-spacing: -2.5px; }
-  .hero p { font-size: 16px; max-width: 420px; }
-  .card { padding: 26px; }
-  .email-addr { font-size: 14px; }
-  .btn { font-size: 14px; padding: 12px 22px; }
-  .msg-from { font-size: 14px; }
-  .msg-subject { font-size: 14px; }
-  header { margin-bottom: 60px; }
-}
-
-/* Tablet (768px – 1199px) — default, mostly fine */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .wrap { max-width: 680px; padding: 44px 24px 80px; }
-}
-
-/* Large phone landscape / small tablet (600px – 767px) */
-@media (max-width: 767px) {
-  .wrap { padding: 28px 16px 72px; }
-  .hero h1 { font-size: 36px; letter-spacing: -1.5px; }
-  .hero p { font-size: 14px; }
-  header { margin-bottom: 40px; }
-  .logo { font-size: 22px; }
-}
-
-/* Mobile portrait (up to 520px) */
-@media (max-width: 520px) {
-  .wrap { padding: 20px 12px 64px; }
-  .hero { margin-bottom: 28px; }
-  .hero h1 { font-size: 30px; letter-spacing: -1.2px; margin-bottom: 10px; }
-  .hero p { font-size: 13px; }
-  header { margin-bottom: 32px; }
-  .logo { font-size: 20px; }
-  .header-chip { font-size: 10px; padding: 3px 10px; }
-
-  /* Stack email row on mobile */
-  .email-row { flex-direction: column; }
-  .email-pill { min-width: unset; }
-  .btn-group { width: 100%; }
-  .btn-group .btn { flex: 1; justify-content: center; }
-
-  /* Smaller cards */
-  .card { padding: 16px; border-radius: 16px; }
-
-  /* Timer chips wrap nicer */
-  .t-chip { font-size: 11px; padding: 5px 11px; }
-  .timer-opts { gap: 5px; }
-  .t-input { width: 62px; font-size: 11px; }
-
-  /* Tabs */
-  .tab { font-size: 12px; padding: 8px 12px; }
-
-  /* Inbox */
-  .msg-av { width: 32px; height: 32px; font-size: 12px; border-radius: 9px; }
-  .msg-from { font-size: 12px; }
-  .msg-subject { font-size: 12px; }
-  .msg-preview { font-size: 11px; }
-  .msg-time { font-size: 10px; }
-  .msg-item { gap: 10px; padding: 12px 8px; }
-
-  /* Detail */
-  .detail-head { padding: 16px; flex-direction: column; }
-  .detail-head .btn { align-self: flex-end; }
-  .detail-body { padding: 16px; }
-
-  /* Saved */
-  .saved-item { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .saved-actions { width: 100%; }
-  .saved-actions .btn { flex: 1; justify-content: center; }
-
-  /* Buttons */
-  .btn { font-size: 12px; padding: 10px 14px; }
-  .btn-sm { padding: 6px 10px; font-size: 11px; }
-
-  /* Modal */
-  .modal-box { padding: 20px; }
-  .modal-title { font-size: 15px; }
-
-  /* Toast closer to bottom bar */
-  .toast { bottom: 20px; font-size: 12px; padding: 9px 16px; max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
-}
-
-/* Very small phones (up to 360px) */
-@media (max-width: 360px) {
-  .hero h1 { font-size: 26px; }
-  .wrap { padding: 16px 10px 56px; }
-  .card { padding: 14px; }
-}
-
-/* Touch device tap target improvements */
-@media (hover: none) and (pointer: coarse) {
-  .btn { min-height: 44px; }
-  .btn-sm { min-height: 38px; }
-  .t-chip { min-height: 36px; padding: 8px 14px; }
-  .msg-item { padding: 16px 10px; }
-  .tab { padding: 10px 16px; min-height: 40px; }
-}
-
-/* ── Account system ── */
-.auth-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.auth-avatar {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: var(--s3);
-  border: 1px solid var(--brd-hi);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: var(--txt2);
-  cursor: pointer; flex-shrink: 0;
-  transition: border-color .2s;
-}
-.auth-avatar:hover { border-color: var(--brd-act); }
-
-/* ── Phone tab ── */
-.phone-section { margin-bottom: 12px; }
-.phone-pill {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--s2); border: 1px solid var(--brd);
-  border-radius: var(--r); padding: 12px 16px;
-  cursor: pointer; transition: border-color .2s, background .2s;
-  position: relative; overflow: hidden; margin-bottom: 8px;
-}
-.phone-pill:hover { border-color: var(--brd-hi); background: var(--s3); }
-.phone-number {
-  font-family: var(--mono); font-size: 15px; font-weight: 500;
-  color: var(--txt); flex: 1; letter-spacing: 0.5px;
-}
-.phone-country {
-  font-size: 11px; color: var(--txt3); flex-shrink: 0;
-}
-.sms-list { list-style: none; }
-.sms-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 12px 10px; border-top: 1px solid var(--brd);
-  border-radius: var(--r-sm); transition: background .15s;
-  margin: 0 -10px; cursor: default;
-}
-.sms-item:hover { background: var(--glow); }
-.sms-av {
-  width: 34px; height: 34px; border-radius: 9px;
-  background: var(--s3); border: 1px solid var(--brd);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
-.sms-from { font-size: 13px; font-weight: 600; color: var(--txt); letter-spacing: -0.2px; margin-bottom: 3px; }
-.sms-body { font-size: 13px; color: var(--txt2); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
-.sms-time { font-family: var(--mono); font-size: 10px; color: var(--txt3); margin-top: 4px; }
-
-.phone-select-wrap {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
-}
-.country-chip {
-  padding: 6px 14px; font-size: 12px; font-weight: 500;
-  background: var(--s2); border: 1px solid var(--brd);
-  border-radius: 100px; color: var(--txt3); cursor: pointer;
-  transition: all .15s; font-family: var(--font);
-}
-.country-chip:hover { border-color: var(--brd-hi); color: var(--txt2); }
-.country-chip.on {
-  background: var(--txt); color: var(--bg);
-  border-color: transparent; font-weight: 600;
-}
-
-/* ── Auth modal extras ── */
-.modal-tabs { display: flex; gap: 2px; background: var(--s2); border-radius: 9px; padding: 3px; margin-bottom: 18px; }
-.modal-tab {
-  flex: 1; padding: 7px; font-size: 13px; font-weight: 500;
-  color: var(--txt3); background: none; border: none;
-  border-radius: 7px; cursor: pointer; font-family: var(--font);
-  transition: all .18s;
-}
-.modal-tab.active { background: var(--s3); color: var(--txt); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
-.modal-err { font-size: 12px; color: #ff6060; margin-top: -10px; margin-bottom: 12px; display: none; }
-.modal-err.show { display: block; }
-.user-info { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 10px 14px; background: var(--s2); border: 1px solid var(--brd); border-radius: var(--r-sm); }
-.user-info-name { font-size: 14px; font-weight: 600; color: var(--txt); }
-.user-info-sub { font-size: 12px; color: var(--txt3); }
-
-/* ── Discord button ── */
-.discord-bar {
-  text-align: center;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--brd);
-}
-.discord-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 12px 24px;
-  background: #111111;
-  color: #fff; font-family: var(--font);
-  font-size: 14px; font-weight: 600;
-  border: none; border-radius: var(--r);
-  cursor: pointer; text-decoration: none;
-  transition: all .18s;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  letter-spacing: -0.2px;
-}
-.discord-btn:hover {
-  background: #222222;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
-  transform: translateY(-1px);
-}
-.discord-btn:active { transform: scale(.98); }
-.discord-icon { font-size: 18px; line-height: 1; }
-.discord-sub { font-size: 11px; color: var(--txt3); margin-top: 8px; }
-
-@media (max-width: 520px) {
-  .discord-btn { font-size: 13px; padding: 11px 18px; }
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .mobile-nav{display:flex;}
+  .main{height:calc(100vh - 60px);padding-bottom:0;}
+  .main-inner{padding:20px 14px 80px;}
+  .online-counter{bottom:72px;right:12px;padding:5px 10px;font-size:11px;}
+  .toast{bottom:76px;}
+  .affiliate-grid{grid-template-columns:1fr;}
+  .email-row{flex-direction:column;}
+  .email-pill{min-width:unset;}
+  .btn-group .btn{flex:1;}
+  .sent-actions{flex-direction:column;}
+  .pwned-input-row{flex-direction:column;}
+}
+@media(min-width:769px) and (max-width:1100px){
+  :root{--sidebar-w:60px;}
+  .sidebar-logo-txt,.nav-label,.sidebar-section-label,.nav-badge{display:none;}
+  .sidebar{padding:12px 8px;align-items:center;}
+  .sidebar-logo{padding:8px;justify-content:center;}
+  .nav-item{justify-content:center;padding:10px;}
 }
 </style>
 </head>
 <body>
+<canvas id="bg-canvas"></canvas>
 
-<div class="wrap">
-  <!-- Header -->
-  <header>
-    <div class="logo">AltMail<span class="logo-dot">.</span></div>
-    <div class="auth-bar">
-      <div class="header-chip" id="headerChip">Temporäre E-Mail</div>
-      <div class="auth-avatar" id="authAvatar" onclick="openAuthModal()" title="Account">?</div>
-    </div>
-  </header>
-
-  <!-- Hero -->
-  <div class="hero">
-    <h1 id="heroTitle">Wegwerf-Emails,<br><strong id="heroStrong">sofort bereit.</strong></h1>
-    <p id="heroSub">Anonym, keine Registrierung. Links direkt klickbar, Emails speicherbar.</p>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--txt)"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <span class="sidebar-logo-txt">AltMail<span class="logo-dot">.</span></span>
   </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" id="tabActive" onclick="switchTab('active')">Email</button>
-    <button class="tab" id="tabPhone" onclick="switchTab('phone')">Telefon</button>
-    <button class="tab" id="tabSaved" onclick="switchTab('saved')">
-      <span id="tabSavedLabel">Gespeichert</span>
-      <span class="tab-badge" id="savedBadge" style="display:none"></span>
+  <div class="sidebar-section-label">Haupt</div>
+  <button class="nav-item active" id="snav-active" onclick="switchPage('active')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <span class="nav-label">Email</span>
+    <span class="nav-badge" id="snav-active-badge" style="display:none"></span>
+  </button>
+  <button class="nav-item" id="snav-sender" onclick="switchPage('sender')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <span class="nav-label">Senden</span>
+    <span class="nav-badge" id="snav-sender-badge" style="display:none"></span>
+  </button>
+  <button class="nav-item" id="snav-phone" onclick="switchPage('phone')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.35 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <span class="nav-label">Telefon</span>
+  </button>
+  <button class="nav-item" id="snav-saved" onclick="switchPage('saved')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-label">Gespeichert</span>
+    <span class="nav-badge" id="snav-saved-badge" style="display:none"></span>
+  </button>
+  <div class="sidebar-section-label">Tools</div>
+  <button class="nav-item" id="snav-pwned" onclick="switchPage('pwned')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span class="nav-label">Pwned?</span>
+  </button>
+  <button class="nav-item" id="snav-whoami" onclick="switchPage('whoami')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-label">WHOAMI</span>
+  </button>
+  <div class="sidebar-bottom">
+    <button class="nav-item" onclick="toggleTheme()">
+      <svg id="sb-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="sb-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span class="nav-label" id="theme-label">Light Mode</span>
+    </button>
+    <button class="nav-item" id="snav-auth" onclick="openAuthModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="nav-label" id="auth-nav-label">Account</span>
     </button>
   </div>
+</nav>
 
-  <!-- ── AKTIV PANEL ── -->
-  <div class="panel active" id="panel-active">
+<nav class="mobile-nav">
+  <button class="mob-nav-item active" id="mnav-active" onclick="switchPage('active')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    Email
+  </button>
+  <button class="mob-nav-item" id="mnav-sender" onclick="switchPage('sender')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Senden
+  </button>
+  <button class="mob-nav-item" id="mnav-pwned" onclick="switchPage('pwned')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Pwned?
+  </button>
+  <button class="mob-nav-item" id="mnav-saved" onclick="switchPage('saved')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    Saved
+  </button>
+  <button class="mob-nav-item" id="mnav-whoami" onclick="switchPage('whoami')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    More
+  </button>
+</nav>
 
+<main class="main">
+<div class="main-inner">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="header-chip" id="headerChip">Temporäre E-Mail</div>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" style="display:none" id="mobile-theme-toggle">
+        <svg id="mt-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+        <svg id="mt-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="auth-avatar" id="authAvatar" onclick="openAuthModal()">?</div>
+    </div>
+  </div>
+
+  <!-- PAGE: EMAIL -->
+  <div class="page active" id="page-active">
+    <div style="text-align:center;margin-bottom:28px;">
+      <h1 style="font-size:36px;font-weight:300;letter-spacing:-1.8px;color:var(--txt);margin-bottom:10px;">Wegwerf-Emails,<br><strong style="font-weight:600;">sofort bereit.</strong></h1>
+      <p style="font-size:14px;color:var(--txt3);line-height:1.6;">Anonym, keine Registrierung. Links klickbar, Emails speicherbar.</p>
+    </div>
     <div class="card">
-      <div class="card-label" id="labelEmail">E-Mail Adresse</div>
+      <div class="card-label">E-Mail Adresse</div>
       <div class="email-row">
         <div class="email-pill" id="emailPill" onclick="copyEmail()">
           <div class="status-dot loading" id="statusDot"></div>
@@ -883,26 +389,21 @@ header {
           <span class="email-copy-hint" id="copyHint"></span>
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" id="genBtn" onclick="doGenerate()" disabled>
-            <span id="genIcon">↻</span> <span id="btnNew">Neue Email</span>
-          </button>
-          <button class="btn btn-ghost" id="saveBtn" onclick="openSave()" disabled>
-            + <span id="btnSave">Speichern</span>
-          </button>
+          <button class="btn btn-primary" id="genBtn" onclick="doGenerate()" disabled><span id="genIcon">↻</span> Neue Email</button>
+          <button class="btn btn-ghost" id="saveBtn" onclick="openSave()" disabled>+ Speichern</button>
         </div>
       </div>
-
       <div class="timer-section">
-        <div class="section-label" id="labelExpiry">Ablaufzeit</div>
+        <div class="section-label">Ablaufzeit</div>
         <div class="timer-opts">
-          <button class="t-chip" onclick="pickTimer(5, this)" id="chip5">5m</button>
-          <button class="t-chip on" onclick="pickTimer(10, this)" id="chip10">10m</button>
-          <button class="t-chip" onclick="pickTimer(30, this)" id="chip30">30m</button>
-          <button class="t-chip" onclick="pickTimer(60, this)" id="chip60">1h</button>
-          <button class="t-chip" onclick="pickTimer(0, this)" id="chipUnlim">∞</button>
+          <button class="t-chip" onclick="pickTimer(5,this)">5m</button>
+          <button class="t-chip on" onclick="pickTimer(10,this)">10m</button>
+          <button class="t-chip" onclick="pickTimer(30,this)">30m</button>
+          <button class="t-chip" onclick="pickTimer(60,this)">1h</button>
+          <button class="t-chip" onclick="pickTimer(0,this)">∞</button>
           <div class="custom-wrap">
-            <input class="t-input" id="customMin" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="min" />
-            <button class="t-ok-btn" onclick="applyCustom()" id="btnOk">→</button>
+            <input class="t-input" id="customMin" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="min">
+            <button class="t-ok-btn" onclick="applyCustom()">→</button>
           </div>
         </div>
         <div class="timer-bar-wrap">
@@ -911,29 +412,25 @@ header {
         </div>
         <div class="status-line">
           <div class="sl-dot loading" id="slDot"></div>
-          <span class="sl-txt" id="slTxt">Verbinde mit mail.tm…</span>
+          <span class="sl-txt" id="slTxt">Verbinde…</span>
+          <div class="refresh-ring-wrap" id="refreshRingWrap" style="display:none">
+            <div class="refresh-ring"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" id="refreshRingCircle"/></svg></div>
+            <span class="refresh-ring-label" id="refreshRingLabel">15</span>
+          </div>
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="inbox-header">
-        <div class="inbox-title-row">
-          <span id="labelInbox">Posteingang</span>
-          <span class="inbox-pill" id="inboxCount">0</span>
-        </div>
-        <button class="btn btn-ghost btn-sm" id="refreshBtn" onclick="doFetch(true)" disabled>
-          <span id="refreshIco">↻</span> <span id="btnRefresh">Aktualisieren</span>
-        </button>
+        <div class="inbox-title-row">Posteingang <span class="inbox-pill" id="inboxCount">0</span></div>
+        <button class="btn btn-ghost btn-sm" id="refreshBtn" onclick="doFetch(true)" disabled><span id="refreshIco">↻</span> Refresh</button>
       </div>
       <ul class="msg-list" id="msgList"></ul>
       <div id="emptyState" class="empty-view">
-        <div class="empty-icon-wrap"><span class="spin" style="font-size:18px">↻</span></div>
-        <h3 id="emptyTitle">Verbinde…</h3>
-        <p id="emptyDesc">Einen Moment bitte.</p>
+        <div class="empty-icon"><span class="spin" style="font-size:18px">↻</span></div>
+        <h3>Verbinde…</h3><p>Einen Moment bitte.</p>
       </div>
     </div>
-
     <div class="detail-card" id="detailCard">
       <div class="detail-head">
         <div style="min-width:0;flex:1">
@@ -941,111 +438,232 @@ header {
           <div class="detail-subject" id="dSubj"></div>
           <div class="detail-meta" id="dMeta"></div>
         </div>
-        <button class="btn btn-ghost btn-sm" id="btnClose" onclick="closeDetail()">✕ <span id="btnCloseLabel">Schließen</span></button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" onclick="copyDetailBody()">&#x1F4CB;</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeDetail()">&#x2715;</button>
+        </div>
       </div>
       <div class="detail-body" id="dBody"></div>
     </div>
-
-  </div>
-
-  <!-- ── SAVED PANEL ── -->
-  <div class="panel" id="panel-saved">
-    <div class="card">
-      <div class="card-label" id="labelSaved">Gespeicherte Adressen</div>
-      <div id="savedList"></div>
+    <div class="affiliate-section">
+      <div class="affiliate-label">Empfehlungen</div>
+      <div class="affiliate-grid">
+        <a class="affiliate-card" href="https://nordvpn.com" target="_blank" rel="noopener nofollow">
+          <div class="affiliate-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="affiliate-info"><div class="affiliate-name">NordVPN</div><div class="affiliate-desc">Anonym surfen</div></div>
+          <div class="affiliate-arrow">↗</div><div class="affiliate-badge">VPN</div>
+        </a>
+        <a class="affiliate-card" href="https://proton.me/vpn" target="_blank" rel="noopener nofollow">
+          <div class="affiliate-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="affiliate-info"><div class="affiliate-name">Proton VPN</div><div class="affiliate-desc">Open Source, gratis</div></div>
+          <div class="affiliate-arrow">↗</div><div class="affiliate-badge">VPN</div>
+        </a>
+        <a class="affiliate-card" href="https://bitwarden.com" target="_blank" rel="noopener nofollow">
+          <div class="affiliate-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2H3v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V2z"/></svg></div>
+          <div class="affiliate-info"><div class="affiliate-name">Bitwarden</div><div class="affiliate-desc">Passwort-Manager</div></div>
+          <div class="affiliate-arrow">↗</div><div class="affiliate-badge">Security</div>
+        </a>
+        <a class="affiliate-card" href="https://simplelogin.io" target="_blank" rel="noopener nofollow">
+          <div class="affiliate-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div class="affiliate-info"><div class="affiliate-name">SimpleLogin</div><div class="affiliate-desc">Email-Aliase dauerhaft</div></div>
+          <div class="affiliate-arrow">↗</div><div class="affiliate-badge">Email</div>
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- ── PHONE PANEL ── -->
-  <div class="panel" id="panel-phone">
-    <div class="card phone-section">
+  <!-- PAGE: PWNED -->
+  <div class="page" id="page-pwned" style="display:none">
+    <div class="pwned-hero">
+      <h2>Bin ich gehackt?</h2>
+      <p>Prüfe ob deine Email-Adresse oder dein Passwort in einem Datenleck aufgetaucht sind.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Email-Adresse prüfen</div>
+      <div class="pwned-input-row">
+        <input type="email" id="pwnedEmailInput" placeholder="deine@email.com" inputmode="email">
+        <button class="btn btn-primary" onclick="checkEmail()" id="checkEmailBtn" style="flex-shrink:0;">Prüfen</button>
+      </div>
+      <div id="pwnedEmailResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Passwort prüfen (k-Anonym)</div>
+      <p style="font-size:12px;color:var(--txt3);margin-bottom:12px;line-height:1.6;">Nur die ersten 5 Zeichen des SHA-1-Hashes werden gesendet — dein Passwort verlässt nie dieses Gerät.</p>
+      <div class="pwned-input-row">
+        <input type="password" id="pwnedPwInput" placeholder="Passwort eingeben..." autocomplete="new-password">
+        <button class="btn btn-primary" onclick="checkPassword()" id="checkPwBtn" style="flex-shrink:0;">Prüfen</button>
+      </div>
+      <div class="pw-strength-bar" id="pwStrengthBar" style="width:0"></div>
+      <div id="pwnedPwResult"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: SENDER -->
+  <div class="page" id="page-sender" style="display:none">
+    <div class="card">
+      <div class="card-label">
+        Von (Absender)
+        <span class="mailjet-badge">✦ Mailjet</span>
+      </div>
+
+      <!-- Mailjet From-Adresse: entweder Temp-Email oder eigene verifizierte Adresse -->
+      <div class="from-addr-row">
+        <span class="from-label">Von</span>
+        <span class="from-addr" id="senderFrom">Keine Email aktiv — zuerst Email generieren</span>
+        <div class="status-dot" id="senderDot" style="flex-shrink:0"></div>
+      </div>
+
+      <!-- Info: Mailjet aktiv -->
+      <div class="info-box mj" id="senderInfoBox" style="display:none">
+        <strong>✦ Mailjet API aktiv</strong><br>
+        Emails werden direkt über Mailjet's Transactional API gesendet — zuverlässig, ohne SMTP-Probleme im Browser.<br>
+        <span style="color:var(--txt3);font-size:11px;">Absender-Adresse: <strong style="color:var(--txt2)" id="mjFromDisplay">—</strong></span>
+      </div>
+      <div class="info-box warn" id="senderWarnBox">
+        <strong>⚠ Keine aktive Email</strong><br>
+        Gehe zuerst zu "Email" und generiere eine Temp-Adresse. Alternativ gib unten eine eigene verifizierte Mailjet-Absenderadresse ein.
+      </div>
+
+      <!-- Eigene Mailjet-Absenderadresse (optional) -->
+      <div style="margin-bottom:10px;">
+        <div class="section-label" style="margin-bottom:6px;">Absender-Override (optional)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="email" id="mjFromOverride" placeholder="verifiziert@deine-domain.com — leer = Temp-Email" style="flex:1;font-size:13px;">
+          <input type="text" id="mjFromName" placeholder="Anzeigename" style="flex:1;font-size:13px;max-width:180px;">
+        </div>
+        <p style="font-size:11px;color:var(--txt3);margin-top:6px;line-height:1.5;">
+          ℹ Mailjet erlaubt nur <strong style="color:var(--txt2)">verifizierte Absenderadressen</strong> oder Domains.
+          Leer lassen um die aktive Temp-Email zu verwenden (wird von Mailjet ggf. abgelehnt falls nicht verifiziert).
+        </p>
+      </div>
+
+      <div class="card-label" style="margin-top:4px;">Neue Email verfassen</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input type="email" id="sendTo" placeholder="An: empfaenger@example.com" inputmode="email">
+        <input type="text" id="mjToName" placeholder="Empfänger-Name (optional)">
+        <input type="text" id="sendSubject" placeholder="Betreff">
+        <textarea id="sendBody" placeholder="Nachricht schreiben…" style="min-height:140px;"></textarea>
+        <div id="sendStatus" class="send-status"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn btn-ghost" onclick="clearCompose()">Leeren</button>
+          <button class="btn btn-primary" id="sendBtn" onclick="sendEmail()">
+            <span id="sendBtnIcon">↑</span> Senden via Mailjet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mailjet API Key Info -->
+    <div class="card">
+      <div class="card-label">Mailjet Konfiguration</div>
+      <div class="info-box mj" style="margin-bottom:0">
+        <strong>✦ API-Key hinterlegt</strong><br>
+        Mailjet Public Key: <span style="font-family:var(--mono);color:var(--txt2)">c4113cb2…</span><br>
+        <span style="color:var(--txt3);font-size:11px;">
+          Für den Versand benötigst du zusätzlich den <strong style="color:var(--txt2)">Secret Key</strong> aus deinem Mailjet-Dashboard.
+          Dieser wird lokal gespeichert und nie übertragen.
+        </span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <input type="password" id="mjSecretKey" placeholder="Mailjet Secret Key (aus Dashboard)" style="flex:1;font-size:13px;">
+        <button class="btn btn-primary btn-sm" onclick="saveMjSecret()">Speichern</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearMjSecret()">Löschen</button>
+      </div>
+      <p style="font-size:11px;color:var(--txt3);margin-top:8px;line-height:1.5;">
+        🔒 Wird nur im lokalen Browser-Speicher gespeichert. 
+        <a href="https://app.mailjet.com/account/api_keys" target="_blank" rel="noopener" style="color:var(--txt2);text-decoration:underline;text-underline-offset:2px;">Mailjet Dashboard ↗</a>
+      </p>
+    </div>
+
+    <div class="card" id="sentCard" style="display:none">
+      <div class="inbox-header">
+        <div class="inbox-title-row">Verlauf <span class="inbox-pill" id="sentCount">0</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="clearSentHistory()">Leeren</button>
+      </div>
+      <div id="sentList"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: PHONE -->
+  <div class="page" id="page-phone" style="display:none">
+    <div class="card">
       <div class="card-label">Temporäre Telefonnummer</div>
       <div class="phone-select-wrap" id="countryChips">
-        <button class="country-chip on" onclick="selectCountry('us',this)">🇺🇸 USA</button>
-        <button class="country-chip" onclick="selectCountry('uk',this)">🇬🇧 UK</button>
-        <button class="country-chip" onclick="selectCountry('de',this)">🇩🇪 DE</button>
-        <button class="country-chip" onclick="selectCountry('fr',this)">🇫🇷 FR</button>
-        <button class="country-chip" onclick="selectCountry('ca',this)">🇨🇦 CA</button>
-        <button class="country-chip" onclick="selectCountry('se',this)">🇸🇪 SE</button>
-        <button class="country-chip" onclick="selectCountry('nl',this)">🇳🇱 NL</button>
+        <button class="country-chip on" onclick="selectCountry('us',this)">US</button>
+        <button class="country-chip" onclick="selectCountry('uk',this)">UK</button>
+        <button class="country-chip" onclick="selectCountry('de',this)">DE</button>
+        <button class="country-chip" onclick="selectCountry('fr',this)">FR</button>
+        <button class="country-chip" onclick="selectCountry('ca',this)">CA</button>
+        <button class="country-chip" onclick="selectCountry('se',this)">SE</button>
+        <button class="country-chip" onclick="selectCountry('nl',this)">NL</button>
       </div>
       <div id="phoneList"></div>
-      <div style="margin-top:10px;display:flex;gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="loadPhones()">↻ Neue Nummern</button>
-      </div>
+      <div style="margin-top:10px;"><button class="btn btn-primary btn-sm" onclick="loadPhones()">↻ Neue Nummern</button></div>
     </div>
-
-    <!-- Active number card -->
     <div class="card" id="activePhoneCard" style="display:none">
       <div class="card-label">Aktive Nummer</div>
-      <div class="email-row" style="margin-bottom:0">
-        <div class="email-pill" id="phonePill" onclick="copyActivePhone()" style="cursor:pointer">
-          <div class="status-dot ok"></div>
-          <span class="email-addr" id="activePhoneNum">—</span>
-          <span class="email-copy-hint">Tippen zum Kopieren</span>
-        </div>
+      <div class="email-pill" onclick="copyActivePhone()" style="margin-bottom:0">
+        <div class="status-dot ok"></div>
+        <span class="email-addr" id="activePhoneNum">—</span>
+        <span class="email-copy-hint">Tippen zum Kopieren</span>
       </div>
     </div>
-
     <div class="card" id="smsCard" style="display:none">
       <div class="inbox-header">
-        <div class="inbox-title-row">
-          SMS <span class="inbox-pill" id="smsCount">0</span>
-        </div>
+        <div class="inbox-title-row">SMS <span class="inbox-pill" id="smsCount">0</span></div>
         <button class="btn btn-ghost btn-sm" onclick="refreshSms()">↻ Refresh</button>
       </div>
       <ul class="sms-list" id="smsList"></ul>
       <div id="smsEmpty" class="empty-view" style="padding:28px 20px">
-        <div class="empty-icon-wrap" style="font-size:20px">💬</div>
-        <h3>Keine SMS</h3>
-        <p>Sende eine SMS an diese Nummer.<br><span style="font-size:11px;color:var(--txt3)">Aktualisiert alle 20 Sek.</span></p>
+        <div class="empty-icon" style="font-size:20px">💬</div>
+        <h3>Keine SMS</h3><p>Sende eine SMS an diese Nummer.<br>Aktualisiert alle 20 Sekunden.</p>
       </div>
     </div>
-
   </div>
 
-  <!-- Discord -->
-  <div class="discord-bar">
-    <a class="discord-btn" href="https://discord.gg/jN9q5ceYYp" target="_blank" rel="noopener">
-      <span class="discord-icon">
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.59 1.32A18.18 18.18 0 0 0 14.17 0c-.19.33-.4.78-.55 1.13a16.8 16.8 0 0 0-5.24 0C8.23.78 8.01.33 7.82 0A18.24 18.24 0 0 0 3.4 1.32C.49 5.7-.3 10 .09 14.23A18.35 18.35 0 0 0 5.68 16c.44-.6.84-1.24 1.17-1.92a11.9 11.9 0 0 1-1.85-.9l.45-.35a13.1 13.1 0 0 0 11.1 0l.46.35c-.59.35-1.21.65-1.86.9.34.68.73 1.32 1.17 1.92a18.3 18.3 0 0 0 5.59-1.77C21.8 9.43 20.46 5.17 18.59 1.32ZM7.35 11.66c-1.13 0-2.06-1.06-2.06-2.35 0-1.3.9-2.36 2.06-2.36 1.16 0 2.08 1.06 2.06 2.36 0 1.29-.9 2.35-2.06 2.35Zm7.3 0c-1.13 0-2.06-1.06-2.06-2.35 0-1.3.9-2.36 2.06-2.36 1.16 0 2.08 1.06 2.06 2.36 0 1.29-.9 2.35-2.06 2.35Z" fill="currentColor"/>
-        </svg>
-      </span>
-      Join our Discord
-    </a>
-    <div class="discord-sub">Community · Support · Updates</div>
+  <!-- PAGE: SAVED -->
+  <div class="page" id="page-saved" style="display:none">
+    <div class="card">
+      <div class="card-label">Gespeicherte Adressen</div>
+      <div id="savedList"></div>
+    </div>
   </div>
 
+  <!-- PAGE: WHOAMI -->
+  <div class="page" id="page-whoami" style="display:none">
+    <div class="card" id="whoamiCard"></div>
+  </div>
+</div>
+</main>
+
+<div class="online-counter">
+  <div class="online-dot"></div>
+  <span id="onlineCount">1</span> online
 </div>
 
-<!-- Auth Modal -->
+<!-- AUTH MODAL -->
 <div class="modal-overlay" id="authModalOv" onclick="closeAuthModalOv(event)">
   <div class="modal-box">
-    <!-- Logged out view -->
+    <div class="modal-handle"></div>
     <div id="authLoggedOut">
       <div class="modal-title" style="margin-bottom:14px">Account</div>
       <div class="modal-tabs">
         <button class="modal-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Login</button>
         <button class="modal-tab" id="authTabReg" onclick="switchAuthTab('register')">Registrieren</button>
       </div>
-      <input class="modal-input" id="authEmail" type="email" placeholder="E-Mail Adresse" />
-      <input class="modal-input" id="authPw" type="password" placeholder="Passwort" />
+      <input class="modal-input" id="authEmail" type="email" placeholder="E-Mail Adresse" inputmode="email" autocomplete="email">
+      <input class="modal-input" id="authPw" type="password" placeholder="Passwort" autocomplete="current-password" style="margin-bottom:12px;">
       <div class="modal-err" id="authErr"></div>
       <div class="modal-btns">
         <button class="btn btn-ghost" onclick="closeAuthModal()">Abbrechen</button>
         <button class="btn btn-primary" id="authSubmitBtn" onclick="authSubmit()">Login</button>
       </div>
     </div>
-    <!-- Logged in view -->
     <div id="authLoggedIn" style="display:none">
       <div class="modal-title" style="margin-bottom:12px">Mein Account</div>
       <div class="user-info">
-        <div style="width:38px;height:38px;border-radius:50%;background:var(--s3);border:1px solid var(--brd-hi);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--txt);flex-shrink:0" id="authAvatarBig">?</div>
-        <div>
-          <div class="user-info-name" id="authUserName">User</div>
-          <div class="user-info-sub" id="authUserEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85f0f6e0f7c5e0fde4e8f5e9e0abe6eae8">[email&#160;protected]</a></div>
-        </div>
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--s3);border:1px solid var(--brd-hi);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--txt);flex-shrink:0" id="authAvatarBig">?</div>
+        <div><div class="user-info-name" id="authUserName">User</div><div class="user-info-sub" id="authUserEmail"></div></div>
       </div>
       <div class="modal-btns" style="justify-content:space-between">
         <button class="btn btn-danger btn-sm" onclick="authLogout()">Ausloggen</button>
@@ -1055,1453 +673,682 @@ header {
   </div>
 </div>
 
-<!-- Save Modal -->
+<!-- SAVE MODAL -->
 <div class="modal-overlay" id="modalOv" onclick="closeModalOv(event)">
   <div class="modal-box">
-    <div class="modal-title" id="modalTitle">Email speichern</div>
+    <div class="modal-handle"></div>
+    <div class="modal-title">Email speichern</div>
     <div class="modal-sub" id="modalAddr"></div>
-    <input class="modal-input" id="saveName" type="text" placeholder="Bezeichnung (optional)" maxlength="60" />
+    <input class="modal-input" id="saveName" type="text" placeholder="Bezeichnung (optional)" maxlength="60" style="margin-bottom:16px;">
     <div class="modal-btns">
-      <button class="btn btn-ghost" id="btnCancel" onclick="closeModal()">Abbrechen</button>
-      <button class="btn btn-primary" id="btnConfirm" onclick="confirmSave()">Speichern</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="confirmSave()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- SENT DETAIL MODAL -->
+<div class="modal-overlay" id="sentDetailOv" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="sdTitle"></div>
+    <div class="modal-sub" id="sdMeta"></div>
+    <div id="sdBody" style="font-size:13px;color:var(--txt2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:40vh;overflow-y:auto;background:var(--s2);border-radius:var(--r-sm);padding:14px;border:1px solid var(--brd);margin-bottom:16px;font-family:var(--mono);"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="document.getElementById('sentDetailOv').classList.remove('open')">Schließen</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ══════════════════════════════════════
-// TRANSLATIONS
-// ══════════════════════════════════════
-const TRANSLATIONS = {
-  de: {
-    headerChip: 'Temporäre E-Mail',
-    heroTitle: 'Wegwerf-Emails,',
-    heroStrong: 'sofort bereit.',
-    heroSub: 'Anonym, keine Registrierung. Links direkt klickbar, Emails speicherbar.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Gespeichert',
-    labelEmail: 'E-Mail Adresse',
-    btnNew: 'Neue Email',
-    btnSave: 'Speichern',
-    labelExpiry: 'Ablaufzeit',
-    chipUnlim: '∞ Unbegrenzt',
-    labelInbox: 'Posteingang',
-    btnRefresh: 'Aktualisieren',
-    emptyConnecting: 'Verbinde…',
-    emptyConnectingDesc: 'Einen Moment bitte.',
-    emptyNoMail: 'Noch keine Nachrichten',
-    emptyNoMailDesc: 'Sende eine E-Mail an deine Adresse.\nAktualisiert sich alle 15 Sekunden.',
-    labelSaved: 'Gespeicherte Adressen',
-    btnCloseLabel: 'Schließen',
-    modalTitle: 'Email speichern',
-    savePlaceholder: 'Bezeichnung (optional)',
-    btnCancel: 'Abbrechen',
-    btnConfirm: 'Speichern',
-    copyHint: 'Tippen zum Kopieren',
-    copyFlash: 'Kopiert ✓',
-    statusConnecting: 'Verbinde mit mail.tm…',
-    statusReady: 'Bereit · aktualisiert alle 15 Sek.',
-    statusExpired: 'Session abgelaufen',
-    statusFailed: 'Aktualisierung fehlgeschlagen',
-    statusSavedLoading: 'Gespeicherte Email wird geladen…',
-    statusSavedActive: 'Gespeicherte Email aktiv',
-    statusLastUpdate: 'Zuletzt: ',
-    generating: 'Wird generiert…',
-    errorRetry: 'Fehler – erneut versuchen',
-    errorExpired: 'Fehler – Email evtl. abgelaufen',
-    toastNewMsg: '📬 {n} neue Nachricht{pl}',
-    toastAlreadySaved: 'Bereits gespeichert',
-    toastSaved: '✓ Gespeichert',
-    toastDeleted: 'Gelöscht',
-    toastCopied: 'Kopiert: ',
-    toastTimer: 'Timer: {n} Minuten',
-    btnCopy: 'Kopieren',
-    btnLoad: 'Laden',
-    linkConfirmBadge: 'Bestätigen',
-    linksConfirmLabel: 'Bestätigungs-Links – direkt anklicken',
-    linksLabel: 'Links',
-    contentLabel: 'Inhalt',
-    emptyBody: '(Leer)',
-    noSubject: '(Kein Betreff)',
-    unknown: 'Unbekannt',
-    to: 'An: ',
-    savedEmptyMsg: 'Noch keine Adressen gespeichert.\n\nKlicke auf "+ Speichern" bei einer aktiven Email.',
-    timeJustNow: 'Gerade eben',
-    timeMin: ' Min.',
-    unlimitedSaved: '∞ Gespeichert',
-    errNoEmail: 'Fehler: ',
-  },
-  en: {
-    headerChip: 'Temporary Email',
-    heroTitle: 'Disposable emails,',
-    heroStrong: 'ready instantly.',
-    heroSub: 'Anonymous, no signup. Clickable links, saveable addresses.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Saved',
-    labelEmail: 'Email Address',
-    btnNew: 'New Email',
-    btnSave: 'Save',
-    labelExpiry: 'Expiry',
-    chipUnlim: '∞ Unlimited',
-    labelInbox: 'Inbox',
-    btnRefresh: 'Refresh',
-    emptyConnecting: 'Connecting…',
-    emptyConnectingDesc: 'Just a moment.',
-    emptyNoMail: 'No messages yet',
-    emptyNoMailDesc: 'Send an email to your address.\nRefreshes every 15 seconds.',
-    labelSaved: 'Saved Addresses',
-    btnCloseLabel: 'Close',
-    modalTitle: 'Save email',
-    savePlaceholder: 'Label (optional)',
-    btnCancel: 'Cancel',
-    btnConfirm: 'Save',
-    copyHint: 'Tap to copy',
-    copyFlash: 'Copied ✓',
-    statusConnecting: 'Connecting to mail.tm…',
-    statusReady: 'Ready · refreshes every 15 sec.',
-    statusExpired: 'Session expired',
-    statusFailed: 'Refresh failed',
-    statusSavedLoading: 'Loading saved email…',
-    statusSavedActive: 'Saved email active',
-    statusLastUpdate: 'Last: ',
-    generating: 'Generating…',
-    errorRetry: 'Error – please retry',
-    errorExpired: 'Error – email may have expired',
-    toastNewMsg: '📬 {n} new message{pl}',
-    toastAlreadySaved: 'Already saved',
-    toastSaved: '✓ Saved',
-    toastDeleted: 'Deleted',
-    toastCopied: 'Copied: ',
-    toastTimer: 'Timer: {n} minutes',
-    btnCopy: 'Copy',
-    btnLoad: 'Load',
-    linkConfirmBadge: 'Confirm',
-    linksConfirmLabel: 'Confirmation links – click directly',
-    linksLabel: 'Links',
-    contentLabel: 'Content',
-    emptyBody: '(Empty)',
-    noSubject: '(No subject)',
-    unknown: 'Unknown',
-    to: 'To: ',
-    savedEmptyMsg: 'No addresses saved yet.\n\nClick "+ Save" on an active email.',
-    timeJustNow: 'Just now',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Saved',
-    errNoEmail: 'Error: ',
-  },
-  fr: {
-    headerChip: 'Email temporaire',
-    heroTitle: 'Emails jetables,',
-    heroStrong: 'prêts instantanément.',
-    heroSub: 'Anonyme, sans inscription. Liens cliquables, adresses sauvegardables.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Sauvegardé',
-    labelEmail: 'Adresse email',
-    btnNew: 'Nouvel email',
-    btnSave: 'Sauvegarder',
-    labelExpiry: 'Expiration',
-    chipUnlim: '∞ Illimité',
-    labelInbox: 'Boîte de réception',
-    btnRefresh: 'Actualiser',
-    emptyConnecting: 'Connexion…',
-    emptyConnectingDesc: 'Un instant.',
-    emptyNoMail: 'Aucun message',
-    emptyNoMailDesc: 'Envoyez un email à votre adresse.\nActualisation toutes les 15 secondes.',
-    labelSaved: 'Adresses sauvegardées',
-    btnCloseLabel: 'Fermer',
-    modalTitle: 'Sauvegarder l\u2019email',
-    savePlaceholder: 'Étiquette (optionnel)',
-    btnCancel: 'Annuler',
-    btnConfirm: 'Sauvegarder',
-    copyHint: 'Appuyer pour copier',
-    copyFlash: 'Copié ✓',
-    statusConnecting: 'Connexion à mail.tm…',
-    statusReady: 'Prêt · actualise toutes les 15 sec.',
-    statusExpired: 'Session expirée',
-    statusFailed: 'Échec de l\'actualisation',
-    statusSavedLoading: 'Chargement email sauvegardé…',
-    statusSavedActive: 'Email sauvegardé actif',
-    statusLastUpdate: 'Dernier: ',
-    generating: 'Génération…',
-    errorRetry: 'Erreur – réessayer',
-    errorExpired: 'Erreur – email peut-être expiré',
-    toastNewMsg: '📬 {n} nouveau(x) message(s)',
-    toastAlreadySaved: 'Déjà sauvegardé',
-    toastSaved: '✓ Sauvegardé',
-    toastDeleted: 'Supprimé',
-    toastCopied: 'Copié: ',
-    toastTimer: 'Minuterie: {n} minutes',
-    btnCopy: 'Copier',
-    btnLoad: 'Charger',
-    linkConfirmBadge: 'Confirmer',
-    linksConfirmLabel: 'Liens de confirmation – cliquez directement',
-    linksLabel: 'Liens',
-    contentLabel: 'Contenu',
-    emptyBody: '(Vide)',
-    noSubject: '(Sans objet)',
-    unknown: 'Inconnu',
-    to: 'À: ',
-    savedEmptyMsg: 'Aucune adresse sauvegardée.\n\nCliquez sur "+ Sauvegarder" sur un email actif.',
-    timeJustNow: 'À l\'instant',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Sauvegardé',
-    errNoEmail: 'Erreur: ',
-  },
-  es: {
-    headerChip: 'Email temporal',
-    heroTitle: 'Emails desechables,',
-    heroStrong: 'listos al instante.',
-    heroSub: 'Anónimo, sin registro. Links clicables, direcciones guardables.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Guardado',
-    labelEmail: 'Dirección de email',
-    btnNew: 'Nuevo email',
-    btnSave: 'Guardar',
-    labelExpiry: 'Expiración',
-    chipUnlim: '∞ Ilimitado',
-    labelInbox: 'Bandeja de entrada',
-    btnRefresh: 'Actualizar',
-    emptyConnecting: 'Conectando…',
-    emptyConnectingDesc: 'Un momento.',
-    emptyNoMail: 'Sin mensajes aún',
-    emptyNoMailDesc: 'Envía un email a tu dirección.\nSe actualiza cada 15 segundos.',
-    labelSaved: 'Direcciones guardadas',
-    btnCloseLabel: 'Cerrar',
-    modalTitle: 'Guardar email',
-    savePlaceholder: 'Etiqueta (opcional)',
-    btnCancel: 'Cancelar',
-    btnConfirm: 'Guardar',
-    copyHint: 'Toca para copiar',
-    copyFlash: 'Copiado ✓',
-    statusConnecting: 'Conectando a mail.tm…',
-    statusReady: 'Listo · actualiza cada 15 seg.',
-    statusExpired: 'Sesión caducada',
-    statusFailed: 'Error al actualizar',
-    statusSavedLoading: 'Cargando email guardado…',
-    statusSavedActive: 'Email guardado activo',
-    statusLastUpdate: 'Último: ',
-    generating: 'Generando…',
-    errorRetry: 'Error – intentar de nuevo',
-    errorExpired: 'Error – email posiblemente caducado',
-    toastNewMsg: '📬 {n} mensaje(s) nuevo(s)',
-    toastAlreadySaved: 'Ya guardado',
-    toastSaved: '✓ Guardado',
-    toastDeleted: 'Eliminado',
-    toastCopied: 'Copiado: ',
-    toastTimer: 'Temporizador: {n} minutos',
-    btnCopy: 'Copiar',
-    btnLoad: 'Cargar',
-    linkConfirmBadge: 'Confirmar',
-    linksConfirmLabel: 'Links de confirmación – clic directo',
-    linksLabel: 'Links',
-    contentLabel: 'Contenido',
-    emptyBody: '(Vacío)',
-    noSubject: '(Sin asunto)',
-    unknown: 'Desconocido',
-    to: 'Para: ',
-    savedEmptyMsg: 'No hay direcciones guardadas.\n\nHaz clic en "+ Guardar" en un email activo.',
-    timeJustNow: 'Ahora mismo',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Guardado',
-    errNoEmail: 'Error: ',
-  },
-  pt: {
-    headerChip: 'Email temporário',
-    heroTitle: 'Emails descartáveis,',
-    heroStrong: 'prontos na hora.',
-    heroSub: 'Anônimo, sem cadastro. Links clicáveis, endereços salvos.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Salvos',
-    labelEmail: 'Endereço de email',
-    btnNew: 'Novo email',
-    btnSave: 'Salvar',
-    labelExpiry: 'Expiração',
-    chipUnlim: '∞ Ilimitado',
-    labelInbox: 'Caixa de entrada',
-    btnRefresh: 'Atualizar',
-    emptyConnecting: 'Conectando…',
-    emptyConnectingDesc: 'Um momento.',
-    emptyNoMail: 'Nenhuma mensagem ainda',
-    emptyNoMailDesc: 'Envie um email para seu endereço.\nAtualiza a cada 15 segundos.',
-    labelSaved: 'Endereços salvos',
-    btnCloseLabel: 'Fechar',
-    modalTitle: 'Salvar email',
-    savePlaceholder: 'Etiqueta (opcional)',
-    btnCancel: 'Cancelar',
-    btnConfirm: 'Salvar',
-    copyHint: 'Toque para copiar',
-    copyFlash: 'Copiado ✓',
-    statusConnecting: 'Conectando ao mail.tm…',
-    statusReady: 'Pronto · atualiza a cada 15 seg.',
-    statusExpired: 'Sessão expirada',
-    statusFailed: 'Falha ao atualizar',
-    statusSavedLoading: 'Carregando email salvo…',
-    statusSavedActive: 'Email salvo ativo',
-    statusLastUpdate: 'Último: ',
-    generating: 'Gerando…',
-    errorRetry: 'Erro – tentar novamente',
-    errorExpired: 'Erro – email possivelmente expirado',
-    toastNewMsg: '📬 {n} nova(s) mensagem(ns)',
-    toastAlreadySaved: 'Já salvo',
-    toastSaved: '✓ Salvo',
-    toastDeleted: 'Excluído',
-    toastCopied: 'Copiado: ',
-    toastTimer: 'Temporizador: {n} minutos',
-    btnCopy: 'Copiar',
-    btnLoad: 'Carregar',
-    linkConfirmBadge: 'Confirmar',
-    linksConfirmLabel: 'Links de confirmação – clique diretamente',
-    linksLabel: 'Links',
-    contentLabel: 'Conteúdo',
-    emptyBody: '(Vazio)',
-    noSubject: '(Sem assunto)',
-    unknown: 'Desconhecido',
-    to: 'Para: ',
-    savedEmptyMsg: 'Nenhum endereço salvo ainda.\n\nClique em "+ Salvar" em um email ativo.',
-    timeJustNow: 'Agora mesmo',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Salvo',
-    errNoEmail: 'Erro: ',
-  },
-  it: {
-    headerChip: 'Email temporanea',
-    heroTitle: 'Email usa e getta,',
-    heroStrong: 'pronte subito.',
-    heroSub: 'Anonimo, senza registrazione. Link cliccabili, email salvabili.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Salvati',
-    labelEmail: 'Indirizzo email',
-    btnNew: 'Nuova email',
-    btnSave: 'Salva',
-    labelExpiry: 'Scadenza',
-    chipUnlim: '∞ Illimitato',
-    labelInbox: 'Posta in arrivo',
-    btnRefresh: 'Aggiorna',
-    emptyConnecting: 'Connessione…',
-    emptyConnectingDesc: 'Un momento.',
-    emptyNoMail: 'Nessun messaggio',
-    emptyNoMailDesc: 'Invia un\'email al tuo indirizzo.\nSi aggiorna ogni 15 secondi.',
-    labelSaved: 'Indirizzi salvati',
-    btnCloseLabel: 'Chiudi',
-    modalTitle: 'Salva email',
-    savePlaceholder: 'Etichetta (opzionale)',
-    btnCancel: 'Annulla',
-    btnConfirm: 'Salva',
-    copyHint: 'Tocca per copiare',
-    copyFlash: 'Copiato ✓',
-    statusConnecting: 'Connessione a mail.tm…',
-    statusReady: 'Pronto · aggiorna ogni 15 sec.',
-    statusExpired: 'Sessione scaduta',
-    statusFailed: 'Aggiornamento fallito',
-    statusSavedLoading: 'Caricamento email salvata…',
-    statusSavedActive: 'Email salvata attiva',
-    statusLastUpdate: 'Ultimo: ',
-    generating: 'Generazione…',
-    errorRetry: 'Errore – riprova',
-    errorExpired: 'Errore – email potrebbe essere scaduta',
-    toastNewMsg: '📬 {n} nuovo/i messaggio/i',
-    toastAlreadySaved: 'Già salvato',
-    toastSaved: '✓ Salvato',
-    toastDeleted: 'Eliminato',
-    toastCopied: 'Copiato: ',
-    toastTimer: 'Timer: {n} minuti',
-    btnCopy: 'Copia',
-    btnLoad: 'Carica',
-    linkConfirmBadge: 'Conferma',
-    linksConfirmLabel: 'Link di conferma – clicca direttamente',
-    linksLabel: 'Link',
-    contentLabel: 'Contenuto',
-    emptyBody: '(Vuoto)',
-    noSubject: '(Nessun oggetto)',
-    unknown: 'Sconosciuto',
-    to: 'A: ',
-    savedEmptyMsg: 'Nessun indirizzo salvato.\n\nClicca su "+ Salva" su un\'email attiva.',
-    timeJustNow: 'Proprio ora',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Salvato',
-    errNoEmail: 'Errore: ',
-  },
-  nl: {
-    headerChip: 'Tijdelijk e-mailadres',
-    heroTitle: 'Wegwerp-e-mails,',
-    heroStrong: 'direct klaar.',
-    heroSub: 'Anoniem, geen registratie. Links direct klikbaar, e-mails opslaanbaar.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Opgeslagen',
-    labelEmail: 'E-mailadres',
-    btnNew: 'Nieuw e-mail',
-    btnSave: 'Opslaan',
-    labelExpiry: 'Vervaltijd',
-    chipUnlim: '∞ Onbeperkt',
-    labelInbox: 'Inbox',
-    btnRefresh: 'Vernieuwen',
-    emptyConnecting: 'Verbinden…',
-    emptyConnectingDesc: 'Even geduld.',
-    emptyNoMail: 'Nog geen berichten',
-    emptyNoMailDesc: 'Stuur een e-mail naar uw adres.\nVernieuwt elke 15 seconden.',
-    labelSaved: 'Opgeslagen adressen',
-    btnCloseLabel: 'Sluiten',
-    modalTitle: 'E-mail opslaan',
-    savePlaceholder: 'Label (optioneel)',
-    btnCancel: 'Annuleren',
-    btnConfirm: 'Opslaan',
-    copyHint: 'Tikken om te kopiëren',
-    copyFlash: 'Gekopieerd ✓',
-    statusConnecting: 'Verbinden met mail.tm…',
-    statusReady: 'Klaar · vernieuwt elke 15 sec.',
-    statusExpired: 'Sessie verlopen',
-    statusFailed: 'Vernieuwen mislukt',
-    statusSavedLoading: 'Opgeslagen e-mail laden…',
-    statusSavedActive: 'Opgeslagen e-mail actief',
-    statusLastUpdate: 'Laatste: ',
-    generating: 'Genereren…',
-    errorRetry: 'Fout – opnieuw proberen',
-    errorExpired: 'Fout – e-mail mogelijk verlopen',
-    toastNewMsg: '📬 {n} nieuw(e) bericht(en)',
-    toastAlreadySaved: 'Al opgeslagen',
-    toastSaved: '✓ Opgeslagen',
-    toastDeleted: 'Verwijderd',
-    toastCopied: 'Gekopieerd: ',
-    toastTimer: 'Timer: {n} minuten',
-    btnCopy: 'Kopiëren',
-    btnLoad: 'Laden',
-    linkConfirmBadge: 'Bevestigen',
-    linksConfirmLabel: 'Bevestigingslinks – direct klikken',
-    linksLabel: 'Links',
-    contentLabel: 'Inhoud',
-    emptyBody: '(Leeg)',
-    noSubject: '(Geen onderwerp)',
-    unknown: 'Onbekend',
-    to: 'Aan: ',
-    savedEmptyMsg: 'Nog geen adressen opgeslagen.\n\nKlik op "+ Opslaan" bij een actief e-mail.',
-    timeJustNow: 'Zojuist',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Opgeslagen',
-    errNoEmail: 'Fout: ',
-  },
-  pl: {
-    headerChip: 'Tymczasowy email',
-    heroTitle: 'Jednorazowe emaile,',
-    heroStrong: 'gotowe natychmiast.',
-    heroSub: 'Anonimowo, bez rejestracji. Klikalne linki, adresy do zapisania.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Zapisane',
-    labelEmail: 'Adres email',
-    btnNew: 'Nowy email',
-    btnSave: 'Zapisz',
-    labelExpiry: 'Czas wygaśnięcia',
-    chipUnlim: '∞ Bez limitu',
-    labelInbox: 'Skrzynka odbiorcza',
-    btnRefresh: 'Odśwież',
-    emptyConnecting: 'Łączenie…',
-    emptyConnectingDesc: 'Chwileczkę.',
-    emptyNoMail: 'Brak wiadomości',
-    emptyNoMailDesc: 'Wyślij email na swój adres.\nOdświeża się co 15 sekund.',
-    labelSaved: 'Zapisane adresy',
-    btnCloseLabel: 'Zamknij',
-    modalTitle: 'Zapisz email',
-    savePlaceholder: 'Etykieta (opcjonalnie)',
-    btnCancel: 'Anuluj',
-    btnConfirm: 'Zapisz',
-    copyHint: 'Dotknij aby skopiować',
-    copyFlash: 'Skopiowano ✓',
-    statusConnecting: 'Łączenie z mail.tm…',
-    statusReady: 'Gotowy · odświeża co 15 sek.',
-    statusExpired: 'Sesja wygasła',
-    statusFailed: 'Odświeżanie nieudane',
-    statusSavedLoading: 'Ładowanie zapisanego emaila…',
-    statusSavedActive: 'Zapisany email aktywny',
-    statusLastUpdate: 'Ostatni: ',
-    generating: 'Generowanie…',
-    errorRetry: 'Błąd – spróbuj ponownie',
-    errorExpired: 'Błąd – email mógł wygasnąć',
-    toastNewMsg: '📬 {n} nowa/e wiadomość/i',
-    toastAlreadySaved: 'Już zapisano',
-    toastSaved: '✓ Zapisano',
-    toastDeleted: 'Usunięto',
-    toastCopied: 'Skopiowano: ',
-    toastTimer: 'Timer: {n} minut',
-    btnCopy: 'Kopiuj',
-    btnLoad: 'Załaduj',
-    linkConfirmBadge: 'Potwierdź',
-    linksConfirmLabel: 'Linki potwierdzające – kliknij bezpośrednio',
-    linksLabel: 'Linki',
-    contentLabel: 'Treść',
-    emptyBody: '(Pusty)',
-    noSubject: '(Brak tematu)',
-    unknown: 'Nieznany',
-    to: 'Do: ',
-    savedEmptyMsg: 'Brak zapisanych adresów.\n\nKliknij "+ Zapisz" przy aktywnym emailu.',
-    timeJustNow: 'Przed chwilą',
-    timeMin: ' min.',
-    unlimitedSaved: '∞ Zapisany',
-    errNoEmail: 'Błąd: ',
-  },
-  ru: {
-    headerChip: 'Временная почта',
-    heroTitle: 'Одноразовые email-адреса,',
-    heroStrong: 'мгновенно.',
-    heroSub: 'Анонимно, без регистрации. Кликабельные ссылки, адреса можно сохранять.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Сохранённые',
-    labelEmail: 'Email-адрес',
-    btnNew: 'Новый email',
-    btnSave: 'Сохранить',
-    labelExpiry: 'Время жизни',
-    chipUnlim: '∞ Без ограничений',
-    labelInbox: 'Входящие',
-    btnRefresh: 'Обновить',
-    emptyConnecting: 'Подключение…',
-    emptyConnectingDesc: 'Минуту.',
-    emptyNoMail: 'Сообщений нет',
-    emptyNoMailDesc: 'Отправьте письмо на ваш адрес.\nОбновляется каждые 15 секунд.',
-    labelSaved: 'Сохранённые адреса',
-    btnCloseLabel: 'Закрыть',
-    modalTitle: 'Сохранить email',
-    savePlaceholder: 'Метка (необязательно)',
-    btnCancel: 'Отмена',
-    btnConfirm: 'Сохранить',
-    copyHint: 'Нажмите для копирования',
-    copyFlash: 'Скопировано ✓',
-    statusConnecting: 'Подключение к mail.tm…',
-    statusReady: 'Готово · обновление каждые 15 сек.',
-    statusExpired: 'Сессия истекла',
-    statusFailed: 'Ошибка обновления',
-    statusSavedLoading: 'Загрузка сохранённого адреса…',
-    statusSavedActive: 'Сохранённый адрес активен',
-    statusLastUpdate: 'Последнее: ',
-    generating: 'Генерация…',
-    errorRetry: 'Ошибка – попробуйте снова',
-    errorExpired: 'Ошибка – email мог истечь',
-    toastNewMsg: '📬 {n} новых сообщений',
-    toastAlreadySaved: 'Уже сохранено',
-    toastSaved: '✓ Сохранено',
-    toastDeleted: 'Удалено',
-    toastCopied: 'Скопировано: ',
-    toastTimer: 'Таймер: {n} минут',
-    btnCopy: 'Копировать',
-    btnLoad: 'Загрузить',
-    linkConfirmBadge: 'Подтвердить',
-    linksConfirmLabel: 'Ссылки подтверждения – кликните напрямую',
-    linksLabel: 'Ссылки',
-    contentLabel: 'Содержимое',
-    emptyBody: '(Пусто)',
-    noSubject: '(Без темы)',
-    unknown: 'Неизвестно',
-    to: 'Кому: ',
-    savedEmptyMsg: 'Нет сохранённых адресов.\n\nНажмите "+ Сохранить" у активного email.',
-    timeJustNow: 'Только что',
-    timeMin: ' мин.',
-    unlimitedSaved: '∞ Сохранён',
-    errNoEmail: 'Ошибка: ',
-  },
-  ja: {
-    headerChip: '使い捨てメール',
-    heroTitle: '捨てアドを',
-    heroStrong: 'すぐに作成。',
-    heroSub: '匿名・登録不要。リンクがクリック可能、アドレスを保存できます。',
-    tabActive: 'Email',
-    tabSavedLabel: '保存済み',
-    labelEmail: 'メールアドレス',
-    btnNew: '新しいメール',
-    btnSave: '保存',
-    labelExpiry: '有効期限',
-    chipUnlim: '∞ 無制限',
-    labelInbox: '受信トレイ',
-    btnRefresh: '更新',
-    emptyConnecting: '接続中…',
-    emptyConnectingDesc: 'しばらくお待ちください。',
-    emptyNoMail: 'メールなし',
-    emptyNoMailDesc: 'アドレスにメールを送信してください。\n15秒ごとに更新されます。',
-    labelSaved: '保存されたアドレス',
-    btnCloseLabel: '閉じる',
-    modalTitle: 'メールを保存',
-    savePlaceholder: 'ラベル（任意）',
-    btnCancel: 'キャンセル',
-    btnConfirm: '保存',
-    copyHint: 'タップしてコピー',
-    copyFlash: 'コピーしました ✓',
-    statusConnecting: 'mail.tmに接続中…',
-    statusReady: '準備完了 · 15秒ごとに更新',
-    statusExpired: 'セッションが期限切れです',
-    statusFailed: '更新に失敗しました',
-    statusSavedLoading: '保存済みメールを読み込み中…',
-    statusSavedActive: '保存済みメールがアクティブ',
-    statusLastUpdate: '最終更新: ',
-    generating: '生成中…',
-    errorRetry: 'エラー – 再試行してください',
-    errorExpired: 'エラー – メールが期限切れの可能性があります',
-    toastNewMsg: '📬 新着メール {n}件',
-    toastAlreadySaved: '既に保存済み',
-    toastSaved: '✓ 保存しました',
-    toastDeleted: '削除しました',
-    toastCopied: 'コピー: ',
-    toastTimer: 'タイマー: {n}分',
-    btnCopy: 'コピー',
-    btnLoad: '読み込む',
-    linkConfirmBadge: '確認',
-    linksConfirmLabel: '確認リンク – 直接クリック',
-    linksLabel: 'リンク',
-    contentLabel: '内容',
-    emptyBody: '（空）',
-    noSubject: '（件名なし）',
-    unknown: '不明',
-    to: '宛先: ',
-    savedEmptyMsg: '保存済みアドレスはありません。\n\nアクティブなメールの "+ 保存" をクリックしてください。',
-    timeJustNow: 'たった今',
-    timeMin: '分前',
-    unlimitedSaved: '∞ 保存済み',
-    errNoEmail: 'エラー: ',
-  },
-  zh: {
-    headerChip: '临时邮箱',
-    heroTitle: '一次性邮件，',
-    heroStrong: '即刻生成。',
-    heroSub: '匿名使用，无需注册。链接可直接点击，地址可保存。',
-    tabActive: 'Email',
-    tabSavedLabel: '已保存',
-    labelEmail: '邮箱地址',
-    btnNew: '新邮箱',
-    btnSave: '保存',
-    labelExpiry: '过期时间',
-    chipUnlim: '∞ 无限制',
-    labelInbox: '收件箱',
-    btnRefresh: '刷新',
-    emptyConnecting: '连接中…',
-    emptyConnectingDesc: '请稍候。',
-    emptyNoMail: '暂无邮件',
-    emptyNoMailDesc: '向您的地址发送邮件。\n每15秒自动刷新。',
-    labelSaved: '已保存的地址',
-    btnCloseLabel: '关闭',
-    modalTitle: '保存邮箱',
-    savePlaceholder: '标签（可选）',
-    btnCancel: '取消',
-    btnConfirm: '保存',
-    copyHint: '点击复制',
-    copyFlash: '已复制 ✓',
-    statusConnecting: '正在连接 mail.tm…',
-    statusReady: '就绪 · 每15秒刷新',
-    statusExpired: '会话已过期',
-    statusFailed: '刷新失败',
-    statusSavedLoading: '加载已保存邮箱…',
-    statusSavedActive: '已保存邮箱正在使用',
-    statusLastUpdate: '最近: ',
-    generating: '生成中…',
-    errorRetry: '错误 – 请重试',
-    errorExpired: '错误 – 邮箱可能已过期',
-    toastNewMsg: '📬 {n} 条新邮件',
-    toastAlreadySaved: '已经保存过了',
-    toastSaved: '✓ 已保存',
-    toastDeleted: '已删除',
-    toastCopied: '已复制: ',
-    toastTimer: '定时器: {n} 分钟',
-    btnCopy: '复制',
-    btnLoad: '加载',
-    linkConfirmBadge: '确认',
-    linksConfirmLabel: '确认链接 – 直接点击',
-    linksLabel: '链接',
-    contentLabel: '内容',
-    emptyBody: '（空）',
-    noSubject: '（无主题）',
-    unknown: '未知',
-    to: '收件人: ',
-    savedEmptyMsg: '暂无已保存的地址。\n\n在活跃邮箱旁点击「+ 保存」。',
-    timeJustNow: '刚刚',
-    timeMin: '分钟前',
-    unlimitedSaved: '∞ 已保存',
-    errNoEmail: '错误: ',
-  },
-  tr: {
-    headerChip: 'Geçici E-posta',
-    heroTitle: 'Tek kullanımlık e-postalar,',
-    heroStrong: 'anında hazır.',
-    heroSub: 'Anonim, kayıt gerekmez. Bağlantılar tıklanabilir, e-postalar kaydedilebilir.',
-    tabActive: 'Email',
-    tabSavedLabel: 'Kaydedilen',
-    labelEmail: 'E-posta Adresi',
-    btnNew: 'Yeni E-posta',
-    btnSave: 'Kaydet',
-    labelExpiry: 'Süre Sonu',
-    chipUnlim: '∞ Sınırsız',
-    labelInbox: 'Gelen Kutusu',
-    btnRefresh: 'Yenile',
-    emptyConnecting: 'Bağlanıyor…',
-    emptyConnectingDesc: 'Bir saniye.',
-    emptyNoMail: 'Henüz mesaj yok',
-    emptyNoMailDesc: 'Adresinize bir e-posta gönderin.\n15 saniyede bir güncellenir.',
-    labelSaved: 'Kayıtlı Adresler',
-    btnCloseLabel: 'Kapat',
-    modalTitle: 'E-postayı kaydet',
-    savePlaceholder: 'Etiket (isteğe bağlı)',
-    btnCancel: 'İptal',
-    btnConfirm: 'Kaydet',
-    copyHint: 'Kopyalamak için dokun',
-    copyFlash: 'Kopyalandı ✓',
-    statusConnecting: 'mail.tm\'ye bağlanıyor…',
-    statusReady: 'Hazır · her 15 sn. güncellenir.',
-    statusExpired: 'Oturum süresi doldu',
-    statusFailed: 'Güncelleme başarısız',
-    statusSavedLoading: 'Kayıtlı e-posta yükleniyor…',
-    statusSavedActive: 'Kayıtlı e-posta aktif',
-    statusLastUpdate: 'Son: ',
-    generating: 'Oluşturuluyor…',
-    errorRetry: 'Hata – tekrar deneyin',
-    errorExpired: 'Hata – e-posta süresi dolmuş olabilir',
-    toastNewMsg: '📬 {n} yeni mesaj',
-    toastAlreadySaved: 'Zaten kayıtlı',
-    toastSaved: '✓ Kaydedildi',
-    toastDeleted: 'Silindi',
-    toastCopied: 'Kopyalandı: ',
-    toastTimer: 'Zamanlayıcı: {n} dakika',
-    btnCopy: 'Kopyala',
-    btnLoad: 'Yükle',
-    linkConfirmBadge: 'Onayla',
-    linksConfirmLabel: 'Onay bağlantıları – doğrudan tıkla',
-    linksLabel: 'Bağlantılar',
-    contentLabel: 'İçerik',
-    emptyBody: '(Boş)',
-    noSubject: '(Konu yok)',
-    unknown: 'Bilinmiyor',
-    to: 'Alıcı: ',
-    savedEmptyMsg: 'Kayıtlı adres yok.\n\nAktif bir e-postada "+ Kaydet" butonuna tıklayın.',
-    timeJustNow: 'Az önce',
-    timeMin: ' dak.',
-    unlimitedSaved: '∞ Kaydedildi',
-    errNoEmail: 'Hata: ',
-  },
-};
+<script>
+// ════════════════════════════════════
+// 3D BACKGROUND
+// ════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,stars=[],shapes=[],frame=0;
+  function isDark(){return document.documentElement.getAttribute('data-theme')!=='light';}
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  function initStars(){stars=[];const n=Math.min(280,Math.floor(W*H/4000));for(let i=0;i<n;i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.2,alpha:Math.random()*.6+.1,phase:Math.random()*Math.PI*2,speed:Math.random()*.015+.003});}
+  function initShapes(){shapes=[{type:'cube',xp:.06,yp:.15,sz:36,rs:.003,dy:.10,op:.18,rot:0,off:1.2},{type:'ring',xp:.94,yp:.10,sz:44,rs:-.003,dy:.08,op:.14,rot:0,off:2.1},{type:'oct',xp:.88,yp:.50,sz:28,rs:.004,dy:.07,op:.15,rot:0,off:.8},{type:'tri',xp:.50,yp:.06,sz:30,rs:.002,dy:.08,op:.12,rot:0,off:1.7},{type:'cube',xp:.04,yp:.70,sz:24,rs:-.003,dy:.09,op:.12,rot:0,off:3.0},{type:'ring',xp:.15,yp:.90,sz:38,rs:.002,dy:.10,op:.10,rot:0,off:.4},{type:'oct',xp:.82,yp:.85,sz:22,rs:.005,dy:.12,op:.11,rot:0,off:2.5},{type:'tri',xp:.30,yp:.20,sz:22,rs:.004,dy:.09,op:.13,rot:0,off:1.1},{type:'cube',xp:.55,yp:.80,sz:18,rs:-.004,dy:.08,op:.09,rot:0,off:.7},{type:'tri',xp:.20,yp:.55,sz:24,rs:.003,dy:.10,op:.10,rot:0,off:3.3},{type:'ring',xp:.75,yp:.65,sz:32,rs:-.002,dy:.07,op:.08,rot:0,off:1.9}];}
+  function drawCube(cx,cy,sz,rot,a){const c=Math.cos(rot),s=Math.sin(rot),h=sz*.5,off=sz*.28;const pts=[[-h,-h],[h,-h],[h,h],[-h,h]].map(([x,y])=>[x*c-y*s*.5+cx,x*s*.5+y*c*.5+cy]);const top=pts.map(([x,y])=>[x,y-off]);ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=isDark()?'rgba(255,255,255,.85)':'rgba(0,0,0,.8)';ctx.lineWidth=.8;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.stroke();ctx.beginPath();top.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.stroke();pts.forEach(([x,y],i)=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(top[i][0],top[i][1]);ctx.stroke();});ctx.restore();}
+  function drawOct(cx,cy,sz,rot,a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=isDark()?'rgba(255,255,255,.85)':'rgba(0,0,0,.8)';ctx.lineWidth=.8;const pts=[];for(let i=0;i<4;i++){const ang=rot+i/4*Math.PI*2;pts.push([cx+Math.cos(ang)*sz,cy+Math.sin(ang)*sz*.6]);}const top=[cx,cy-sz*.9],bot=[cx,cy+sz*.9];for(let i=0;i<4;i++){const n=pts[(i+1)%4];ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(n[0],n[1]);ctx.stroke();ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(top[0],top[1]);ctx.stroke();ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(bot[0],bot[1]);ctx.stroke();}ctx.restore();}
+  function drawRing(cx,cy,sz,rot,a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=isDark()?'rgba(255,255,255,.85)':'rgba(0,0,0,.8)';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(cx,cy,sz,sz*.38,rot,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.ellipse(cx,cy,sz*.55,sz*.21,rot,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){const ang=rot+i/6*Math.PI*2;ctx.beginPath();ctx.moveTo(cx+Math.cos(ang)*sz*.55,cy+Math.sin(ang)*sz*.21);ctx.lineTo(cx+Math.cos(ang)*sz,cy+Math.sin(ang)*sz*.38);ctx.stroke();}ctx.restore();}
+  function drawTri(cx,cy,sz,rot,a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=isDark()?'rgba(255,255,255,.85)':'rgba(0,0,0,.8)';ctx.lineWidth=.8;const pts=[],inner=[];for(let i=0;i<3;i++){const ang=rot+i/3*Math.PI*2-Math.PI/2;pts.push([cx+Math.cos(ang)*sz,cy+Math.sin(ang)*sz]);inner.push([cx+(Math.cos(ang)*sz)*.45,cy+(Math.sin(ang)*sz)*.45]);}ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.stroke();ctx.beginPath();inner.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.stroke();pts.forEach(([x,y],i)=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(inner[i][0],inner[i][1]);ctx.stroke();});ctx.restore();}
+  function render(){const t=frame/60;ctx.clearRect(0,0,W,H);for(const s of stars){const a=s.alpha*(.5+.5*Math.sin(t*s.speed*40+s.phase));ctx.save();ctx.globalAlpha=a;ctx.fillStyle=isDark()?'#fff':'#000';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.restore();}for(const s of shapes){const cx=s.xp*W,cy=s.yp*H+Math.sin(t*s.dy+s.off)*18,rot=s.rot+t*s.rs*60,a=s.op*(.7+.3*Math.sin(t*.5+s.off));if(s.type==='cube')drawCube(cx,cy,s.sz,rot,a);else if(s.type==='oct')drawOct(cx,cy,s.sz*.6,rot,a);else if(s.type==='ring')drawRing(cx,cy,s.sz,rot,a);else if(s.type==='tri')drawTri(cx,cy,s.sz,rot,a);}frame++;requestAnimationFrame(render);}
+  window.addEventListener('resize',()=>{resize();initStars();initShapes();});
+  resize();initStars();initShapes();render();
+})();
 
-// Country → language code mapping
-const COUNTRY_LANG = {
-  DE:'de', AT:'de', CH:'de', LI:'de',
-  US:'en', GB:'en', AU:'en', CA:'en', NZ:'en', IE:'en', ZA:'en', SG:'en', IN:'en', NG:'en', KE:'en', GH:'en',
-  FR:'fr', BE:'fr', LU:'fr', MC:'fr', SN:'fr', CI:'fr', CM:'fr',
-  ES:'es', MX:'es', AR:'es', CO:'es', CL:'es', PE:'es', VE:'es', EC:'es', GT:'es', CU:'es', BO:'es', DO:'es', HN:'es', PY:'es', SV:'es', NI:'es', CR:'es', PA:'es', UY:'es',
-  BR:'pt', PT:'pt', AO:'pt', MZ:'pt',
-  IT:'it', SM:'it', VA:'it',
-  NL:'nl',
-  PL:'pl',
-  RU:'ru', BY:'ru', KZ:'ru',
-  JP:'ja',
-  CN:'zh', TW:'zh', HK:'zh', MO:'zh',
-  TR:'tr',
-};
+// ════════════════════════════════════
+// THEME
+// ════════════════════════════════════
+function initTheme(){applyTheme(localStorage.getItem('altmail_theme')||'dark');}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);const dark=t==='dark';document.getElementById('sb-sun').style.display=dark?'':'none';document.getElementById('sb-moon').style.display=dark?'none':'';document.getElementById('theme-label').textContent=dark?'Light Mode':'Dark Mode';document.getElementById('mt-sun').style.display=dark?'':'none';document.getElementById('mt-moon').style.display=dark?'none':'';localStorage.setItem('altmail_theme',t);}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+initTheme();
 
-let T = TRANSLATIONS.de; // default
-let currentLang = 'de';
+// ════════════════════════════════════
+// IP-BASED ONLINE COUNTER
+// ════════════════════════════════════
+const ONLINE_STORE = 'altmail_online_ip_v1';
+const IP_TIMEOUT = 30000;
+const HB_INTERVAL = 10000;
+let myIP = null;
+let myIPHash = null;
+async function getMyIP(){if(myIP)return myIP;try{const r=await fetch('https://api.ipify.org?format=json',{signal:AbortSignal.timeout(5000)});const d=await r.json();myIP=d.ip;return myIP;}catch{try{const r2=await fetch('https://api64.ipify.org?format=json',{signal:AbortSignal.timeout(4000)});const d2=await r2.json();myIP=d2.ip;return myIP;}catch{myIP='local_'+(sessionStorage.getItem('altmail_tab_id')||Math.random().toString(36).slice(2));return myIP;}}}
+async function hashIP(ip){if(!ip)return null;try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ip+'altmail_v1'));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);}catch{return ip.replace(/\./g,'_').replace(/:/g,'_').slice(0,16);}}
+function readOnlineIPs(){try{return JSON.parse(localStorage.getItem(ONLINE_STORE)||'{}');}catch{return{};}}
+function writeOnlineIPs(obj){try{localStorage.setItem(ONLINE_STORE,JSON.stringify(obj));}catch{}}
+function purgeExpiredIPs(){const now=Date.now();const data=readOnlineIPs();const alive={};for(const[hash,ts]of Object.entries(data)){if(now-ts<IP_TIMEOUT)alive[hash]=ts;}writeOnlineIPs(alive);return Object.keys(alive).length;}
+function updateOnlineDisplay(){const count=purgeExpiredIPs();document.getElementById('onlineCount').textContent=Math.max(1,count);}
+async function ipHeartbeat(){if(!myIPHash){const ip=await getMyIP();myIPHash=await hashIP(ip);}if(myIPHash){const data=readOnlineIPs();data[myIPHash]=Date.now();writeOnlineIPs(data);}updateOnlineDisplay();}
+function removeMyIP(){if(!myIPHash)return;const data=readOnlineIPs();delete data[myIPHash];writeOnlineIPs(data);}
+function initOnlineCounter(){document.getElementById('onlineCount').textContent='1';ipHeartbeat();setInterval(ipHeartbeat,HB_INTERVAL);setInterval(updateOnlineDisplay,5000);try{const ch=new BroadcastChannel('altmail_online_ip_v1');ch.onmessage=()=>updateOnlineDisplay();}catch{}window.addEventListener('storage',e=>{if(e.key===ONLINE_STORE)updateOnlineDisplay();});window.addEventListener('beforeunload',removeMyIP);window.addEventListener('pagehide',removeMyIP);}
 
-async function detectLanguage() {
-  try {
-    // Try browser language first as a quick heuristic
-    const bLang = (navigator.language || 'de').split('-')[0].toLowerCase();
+// ════════════════════════════════════
+// INDEXEDDB
+// ════════════════════════════════════
+let db=null;
+function openDB(){return new Promise(resolve=>{if(!window.indexedDB){resolve(null);return;}const req=indexedDB.open('AltMailDB',2);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('users'))d.createObjectStore('users',{keyPath:'email'});if(!d.objectStoreNames.contains('saved_emails'))d.createObjectStore('saved_emails',{keyPath:'id'});if(!d.objectStoreNames.contains('sent_emails'))d.createObjectStore('sent_emails',{keyPath:'id'});};req.onsuccess=e=>{db=e.target.result;resolve(db);};req.onerror=()=>resolve(null);});}
+function dbGet(store,key){return new Promise(r=>{if(!db){r(null);return;}const req=db.transaction(store,'readonly').objectStore(store).get(key);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);});}
+function dbPut(store,item){return new Promise(r=>{if(!db){r();return;}const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(item);tx.oncomplete=r;tx.onerror=r;});}
+function dbDel(store,key){return new Promise(r=>{if(!db){r();return;}const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=r;tx.onerror=r;});}
+function dbGetAll(store){return new Promise(r=>{if(!db){r([]);return;}const req=db.transaction(store,'readonly').objectStore(store).getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);});}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
-    // Fetch geo-IP
-    const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
-    if (r.ok) {
-      const d = await r.json();
-      const countryCode = (d.country_code || '').toUpperCase();
-      const langCode = COUNTRY_LANG[countryCode];
-      if (langCode && TRANSLATIONS[langCode]) {
-        applyLanguage(langCode);
-        return;
-      }
-    }
-  } catch(e) { /* fallback */ }
-
-  // Fallback: browser language
-  try {
-    const bLang = (navigator.language || navigator.languages?.[0] || 'de').split('-')[0].toLowerCase();
-    if (TRANSLATIONS[bLang]) { applyLanguage(bLang); return; }
-  } catch(e) {}
-
-  applyLanguage('en'); // final fallback
-}
-
-function applyLanguage(lang) {
-  if (!TRANSLATIONS[lang]) lang = 'en';
-  T = TRANSLATIONS[lang];
-  currentLang = lang;
-  document.documentElement.lang = lang;
-
-  // Apply static UI strings
-  $('headerChip').textContent = T.headerChip;
-  $('heroTitle').childNodes[0].textContent = T.heroTitle + '\n';
-  $('heroStrong').textContent = T.heroStrong;
-  $('heroSub').textContent = T.heroSub;
-  $('tabActive').textContent = T.tabActive;
-  $('tabSavedLabel').textContent = T.tabSavedLabel;
-  $('labelEmail').textContent = T.labelEmail;
-  $('btnNew').textContent = T.btnNew;
-  $('btnSave').textContent = T.btnSave;
-  $('labelExpiry').textContent = T.labelExpiry;
-  $('chipUnlim').textContent = T.chipUnlim;
-  $('labelInbox').textContent = T.labelInbox;
-  $('btnRefresh').querySelector('#btnRefresh') && ($('btnRefresh').querySelector('span:last-child').textContent = T.btnRefresh);
-  $('btnRefresh').lastChild.textContent = ' ' + T.btnRefresh;
-  $('labelSaved').textContent = T.labelSaved;
-  $('btnCloseLabel').textContent = T.btnCloseLabel;
-  $('modalTitle').textContent = T.modalTitle;
-  $('saveName').placeholder = T.savePlaceholder;
-  $('btnCancel').textContent = T.btnCancel;
-  $('btnConfirm').textContent = T.btnConfirm;
-  $('slTxt').textContent = T.statusConnecting;
-  $('emailAddr').textContent = T.generating;
-}
-
-// ══════════════════════════════════════
-// APP LOGIC
-// ══════════════════════════════════════
-const BASE = 'https://api.mail.tm';
-const SK = 'altmail_v2';
-
-let tok='', addr='', pw='', msgs=[];
-let tSecs=600, tMax=600, tIv, aIv;
-let tMode='countdown';
-
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+const BASE='https://api.mail.tm';
+let tok='',addr='',pw='',msgs=[];
+let tSecs=600,tMax=600,tIv,aIv,rcIv;
+let tMode='countdown',rcVal=15,totalRef=0,readIds=new Set(),sessionStart=null;
+let currentMsgText='';
 const $=id=>document.getElementById(id);
 function rnd(n){return Array.from({length:n},()=>'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*36)]).join('')}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function fmt(iso){
-  if(!iso)return'';
-  const d=new Date(iso),now=new Date(),df=now-d;
-  if(df<60000)return T.timeJustNow;
-  if(df<3600000)return Math.floor(df/60000)+T.timeMin;
-  if(d.toDateString()===now.toDateString())return d.toLocaleTimeString(currentLang,{hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString(currentLang,{day:'2-digit',month:'2-digit',year:'2-digit'});
-}
-function setStatus(s,t){
-  $('slDot').className='sl-dot '+(s==='ok'?'ok':s==='err'?'err':'loading');
-  $('slTxt').textContent=t;
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(iso){if(!iso)return'';const d=new Date(iso),now=new Date(),df=now-d;if(df<60000)return'Gerade';if(df<3600000)return Math.floor(df/60000)+' Min.';if(d.toDateString()===now.toDateString())return d.toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString('de',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function setStatus(s,t){$('slDot').className='sl-dot '+(s==='ok'?'ok':s==='err'?'err':'loading');$('slTxt').textContent=t;}
+let toastT;
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ── Tabs ──────────────────────────────────────────────────────────────
-function switchTab(n){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  const tabMap={'active':'tabActive','phone':'tabPhone','saved':'tabSaved'};
-  if(tabMap[n])$(tabMap[n]).classList.add('active');
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  $('panel-'+n).classList.add('active');
-  if(n==='saved')renderSaved();
-  if(n==='phone')loadPhones();
-}
+// ════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════
+const PAGES=['active','sender','phone','saved','whoami','pwned'];
+const SNAV_IDS={active:'snav-active',sender:'snav-sender',phone:'snav-phone',saved:'snav-saved',whoami:'snav-whoami',pwned:'snav-pwned'};
+const MNAV_IDS={active:'mnav-active',sender:'mnav-sender',phone:'mnav-phone',saved:'mnav-saved',whoami:'mnav-whoami',pwned:'mnav-pwned'};
+function switchPage(name){PAGES.forEach(p=>{const el=$('page-'+p);if(el)el.style.display='none';const sn=$(SNAV_IDS[p]);if(sn)sn.classList.remove('active');const mn=$(MNAV_IDS[p]);if(mn)mn.classList.remove('active');});const el=$('page-'+name);if(el)el.style.display='block';const sn=$(SNAV_IDS[name]);if(sn)sn.classList.add('active');const mn=$(MNAV_IDS[name]);if(mn)mn.classList.add('active');if(name==='saved')renderSaved();if(name==='phone')loadPhones();if(name==='whoami')renderWhoami();if(name==='sender'){updateSenderFrom();renderSentList();}document.querySelector('.main').scrollTop=0;}
 
-// ── Timer ─────────────────────────────────────────────────────────────
-function pickTimer(mins, btn){
-  document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  if(mins===0){
-    tMode='unlimited'; clearInterval(tIv);
-    $('timerReadout').textContent='∞';
-    $('timerFill').style.width='100%';
-  } else {
-    tMode='countdown'; tMax=mins*60;
-    if(tok) startTimer();
-  }
-}
-function applyCustom(){
-  const v=parseInt($('customMin').value.replace(/[^0-9]/g,''));
-  if(!v||v<1)return;
-  document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));
-  tMode='countdown'; tMax=v*60;
-  if(tok) startTimer();
-  showToast(T.toastTimer.replace('{n}',v));
-}
-function startTimer(){
-  clearInterval(tIv);
-  if(tMode==='unlimited'){$('timerReadout').textContent='∞';$('timerFill').style.width='100%';return;}
-  tSecs=tMax;
-  tIv=setInterval(()=>{
-    tSecs--;
-    const m=Math.floor(tSecs/60),s=tSecs%60;
-    $('timerReadout').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    $('timerFill').style.width=(tSecs/tMax*100)+'%';
-    if(tSecs<=0){clearInterval(tIv);doGenerate();}
-  },1000);
-}
+// ════════════════════════════════════
+// CLIPBOARD
+// ════════════════════════════════════
+async function copyToClipboard(text){try{await navigator.clipboard.writeText(text);return true;}catch{}try{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);if(ok)return true;}catch{}return false;}
 
-// ── Generate ──────────────────────────────────────────────────────────
+// ════════════════════════════════════
+// TIMER
+// ════════════════════════════════════
+function pickTimer(mins,btn){document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(mins===0){tMode='unlimited';clearInterval(tIv);$('timerReadout').textContent='∞';$('timerFill').style.width='100%';}else{tMode='countdown';tMax=mins*60;if(tok)startTimer();}}
+function applyCustom(){const v=parseInt($('customMin').value.replace(/\D/g,''));if(!v||v<1)return;document.querySelectorAll('.t-chip').forEach(b=>b.classList.remove('on'));tMode='countdown';tMax=v*60;if(tok)startTimer();showToast('Timer: '+v+' Min.');}
+function startTimer(){clearInterval(tIv);if(tMode==='unlimited'){$('timerReadout').textContent='∞';$('timerFill').style.width='100%';return;}tSecs=tMax;tIv=setInterval(()=>{tSecs--;const m=Math.floor(tSecs/60),s=tSecs%60;$('timerReadout').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');$('timerFill').style.width=(tSecs/tMax*100)+'%';if(tSecs<=0){clearInterval(tIv);doGenerate();}},1000);}
+function startRefreshRing(){clearInterval(rcIv);rcVal=15;$('refreshRingWrap').style.display='flex';const circle=$('refreshRingCircle'),label=$('refreshRingLabel'),circ=2*Math.PI*5;rcIv=setInterval(()=>{rcVal--;label.textContent=rcVal;if(circle)circle.style.strokeDashoffset=circ*(1-rcVal/15);if(rcVal<=0){rcVal=15;label.textContent=15;if(circle)circle.style.strokeDashoffset=0;}},1000);}
+
+// ════════════════════════════════════
+// EMAIL CORE
+// ════════════════════════════════════
 async function doGenerate(){
-  clearInterval(aIv);clearInterval(tIv);
-  tok='';addr='';pw='';msgs=[];
-  $('emailAddr').textContent=T.generating;
-  $('copyHint').textContent='';
-  $('genBtn').disabled=true; $('saveBtn').disabled=true; $('refreshBtn').disabled=true;
-  $('statusDot').className='status-dot loading';
-  setStatus('loading', T.statusConnecting);
-  renderInbox(true); closeDetail();
-
+  clearInterval(aIv);clearInterval(tIv);clearInterval(rcIv);
+  tok='';addr='';pw='';msgs=[];sessionStart=null;
+  $('emailAddr').textContent='Wird generiert…';$('copyHint').textContent='';
+  $('genBtn').disabled=true;$('saveBtn').disabled=true;$('refreshBtn').disabled=true;
+  $('statusDot').className='status-dot loading';$('refreshRingWrap').style.display='none';
+  setStatus('loading','Verbinde mit mail.tm…');renderInbox(true);closeDetail();
   try{
-    const dr=await fetch(BASE+'/domains?page=1');
-    if(!dr.ok)throw new Error('Domains: '+dr.status);
-    const dd=await dr.json();
-    const domain=(dd['hydra:member']||dd)[0]?.domain;
-    if(!domain)throw new Error('No domain available');
-
-    const user=rnd(10),password=rnd(14)+'Aa1!';
-    const address=user+'@'+domain;
+    const dr=await fetch(BASE+'/domains?page=1');if(!dr.ok)throw new Error('Domains: '+dr.status);
+    const dd=await dr.json();const domain=(dd['hydra:member']||dd)[0]?.domain;if(!domain)throw new Error('No domain');
+    const user=rnd(10),password=rnd(14)+'Aa1!',address=user+'@'+domain;
     const ar=await fetch(BASE+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address,password})});
     if(!ar.ok){const e=await ar.json().catch(()=>({}));throw new Error(e['hydra:description']||ar.status);}
-
     const tr=await fetch(BASE+'/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address,password})});
     if(!tr.ok)throw new Error('Token: '+tr.status);
-    tok=(await tr.json()).token; addr=address; pw=password;
-
-    $('emailAddr').textContent=addr;
-    $('copyHint').textContent=T.copyHint;
-    $('statusDot').className='status-dot ok';
-    $('genBtn').disabled=false; $('saveBtn').disabled=false; $('refreshBtn').disabled=false;
-    setStatus('ok', T.statusReady);
-    startTimer();
-    await doFetch(false);
-    aIv=setInterval(()=>doFetch(false),15000);
+    tok=(await tr.json()).token;addr=address;pw=password;sessionStart=new Date();
+    $('emailAddr').textContent=addr;$('copyHint').textContent='Tippen zum Kopieren';
+    $('statusDot').className='status-dot ok';$('genBtn').disabled=false;$('saveBtn').disabled=false;$('refreshBtn').disabled=false;
+    setStatus('ok','Bereit · aktualisiert alle 15 Sek.');
+    updateSenderFrom();startTimer();startRefreshRing();
+    await doFetch(false);aIv=setInterval(()=>{doFetch(false);startRefreshRing();},15000);
   }catch(e){
-    console.error(e);
-    $('statusDot').className='status-dot err';
-    $('genBtn').disabled=false;
-    $('emailAddr').textContent=T.errorRetry;
-    setStatus('err', T.errNoEmail + e.message);
-    renderInbox(false);
+    $('statusDot').className='status-dot err';$('genBtn').disabled=false;
+    $('emailAddr').textContent='Fehler – erneut versuchen';setStatus('err','Fehler: '+e.message);renderInbox(false);
   }
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────
 async function doFetch(manual=false){
   if(!tok)return;
-  if(manual){$('refreshIco').className='spin';$('refreshBtn').disabled=true;}
+  if(manual){$('refreshIco').className='spin';$('refreshBtn').disabled=true;clearInterval(rcIv);startRefreshRing();}
   try{
     const r=await fetch(BASE+'/messages?page=1',{headers:{'Authorization':'Bearer '+tok}});
-    if(r.status===401){setStatus('err', T.statusExpired);return;}
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    const list=d['hydra:member']||[];
-    const old=new Set(msgs.map(m=>m.id));
-    const fresh=list.filter(m=>!old.has(m.id));
-    if(fresh.length>0&&msgs.length>0){
-      const pl=fresh.length>1?'s':'';
-      showToast(T.toastNewMsg.replace('{n}',fresh.length).replace('{pl}',pl));
-    }
-    msgs=list;
-    $('inboxCount').textContent=msgs.length;
-    renderInbox(false);
-    setStatus('ok', T.statusLastUpdate+new Date().toLocaleTimeString(currentLang,{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  }catch(e){setStatus('err', T.statusFailed);}
+    if(r.status===401){setStatus('err','Session abgelaufen');return;}if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();const list=d['hydra:member']||[];
+    const old=new Set(msgs.map(m=>m.id));const fresh=list.filter(m=>!old.has(m.id));
+    if(fresh.length>0&&msgs.length>0)showToast('📬 '+fresh.length+' neue Nachricht'+(fresh.length>1?'en':''));
+    msgs=list;totalRef++;$('inboxCount').textContent=msgs.length;renderInbox(false);
+    setStatus('ok','Zuletzt: '+new Date().toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+    updateSavedBadge();
+  }catch(e){setStatus('err','Aktualisierung fehlgeschlagen');}
   finally{$('refreshIco').className='';$('refreshIco').textContent='↻';$('refreshBtn').disabled=false;}
 }
 
-// ── Render inbox ──────────────────────────────────────────────────────
 function renderInbox(loading){
   const list=$('msgList'),empty=$('emptyState');
-  if(loading){
-    list.innerHTML='';empty.style.display='';
-    empty.innerHTML=`<div class="empty-icon-wrap"><span class="spin" style="font-size:18px">↻</span></div><h3>${esc(T.emptyConnecting)}</h3><p>${esc(T.emptyConnectingDesc)}</p>`;
-    return;
-  }
-  if(!msgs.length){
-    list.innerHTML='';empty.style.display='';
-    empty.innerHTML=`<div class="empty-icon-wrap" style="font-size:22px">◻</div><h3>${esc(T.emptyNoMail)}</h3><p>${esc(T.emptyNoMailDesc).replace('\n','<br>')}</p>`;
-    return;
-  }
+  if(loading){list.innerHTML='';empty.style.display='';empty.innerHTML='<div class="empty-icon"><span class="spin" style="font-size:18px">↻</span></div><h3>Verbinde…</h3><p>Einen Moment bitte.</p>';return;}
+  if(!msgs.length){list.innerHTML='';empty.style.display='';empty.innerHTML='<div class="empty-icon" style="font-size:22px">◻</div><h3>Noch keine Nachrichten</h3><p>Sende eine E-Mail an deine Adresse.<br>Aktualisiert alle 15 Sekunden.</p>';return;}
   empty.style.display='none';
-  list.innerHTML=msgs.map(m=>`
-    <li class="msg-item" onclick="openMsg('${m.id}')">
-      <div class="msg-av">${(m.from?.address||'?')[0].toUpperCase()}</div>
-      <div class="msg-content">
-        <div class="msg-row1">
-          <span class="msg-from">${esc(m.from?.address||T.unknown)}</span>
-          <span class="msg-time">${fmt(m.createdAt)}</span>
-        </div>
-        <div class="msg-subject">${esc(m.subject||T.noSubject)}</div>
-        <div class="msg-preview">${esc(m.intro||'')}</div>
-      </div>
-    </li>`).join('');
+  list.innerHTML=msgs.map(m=>{const u=!readIds.has(m.id);return`<li class="msg-item${u?' unread':''}" onclick="openMsg('${m.id}')">${u?'<div class="msg-unread-dot"></div>':''}<div class="msg-av">${(m.from?.address||'?')[0].toUpperCase()}</div><div class="msg-content"><div class="msg-row1"><span class="msg-from">${esc(m.from?.address||'Unbekannt')}</span><span class="msg-time">${fmt(m.createdAt)}</span></div><div class="msg-subject">${esc(m.subject||'(Kein Betreff)')}</div><div class="msg-preview">${esc(m.intro||'')}</div></div></li>`;}).join('');
 }
 
-// ── Open message ──────────────────────────────────────────────────────
-function extractLinks(text,html){
-  const s=new Set();
-  const re=/https?:\/\/[^\s"'<>)\]\\,]+/g;
-  (text||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));
-  (html||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));
-  return[...s].filter(u=>!/(\.png|\.gif|\.jpg|\.jpeg|\.svg|\.ico|\.css|\.woff|unsubscribe)/i.test(u));
-}
+function extractLinks(text,html){const s=new Set();const re=/https?:\/\/[^\s"'<>)\]\\,]+/g;(text||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));(html||'').match(re)?.forEach(u=>s.add(u.replace(/[.,;!?)>]+$/,'')));return[...s].filter(u=>!/(\.png|\.gif|\.jpg|\.jpeg|\.svg|\.ico|\.css|\.woff|unsubscribe)/i.test(u));}
 function isConfirm(u){return/confirm|verif|activat|token|auth|validate|magic|click|email.*link/i.test(u);}
 
 async function openMsg(id){
-  if(!tok)return;
+  if(!tok)return;readIds.add(id);renderInbox(false);
   try{
-    const r=await fetch(BASE+'/messages/'+id,{headers:{'Authorization':'Bearer '+tok}});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const m=await r.json();
-    $('dFrom').textContent=m.from?.address||T.unknown;
-    $('dSubj').textContent=m.subject||T.noSubject;
-    $('dMeta').textContent=T.to+(m.to?.[0]?.address||addr)+'  ·  '+new Date(m.createdAt).toLocaleString(currentLang);
-
-    const htmlStr=Array.isArray(m.html)?m.html.join(''):(m.html||'');
-    const all=extractLinks(m.text||'',htmlStr);
-    const confirms=all.filter(isConfirm);
-    const others=all.filter(u=>!isConfirm(u));
-
+    const r=await fetch(BASE+'/messages/'+id,{headers:{'Authorization':'Bearer '+tok}});if(!r.ok)throw new Error('HTTP '+r.status);
+    const m=await r.json();$('dFrom').textContent=m.from?.address||'Unbekannt';$('dSubj').textContent=m.subject||'(Kein Betreff)';$('dMeta').textContent='An: '+(m.to?.[0]?.address||addr)+'  ·  '+new Date(m.createdAt).toLocaleString('de');
+    currentMsgText=m.text||'';const htmlStr=Array.isArray(m.html)?m.html.join(''):(m.html||'');
+    const all=extractLinks(m.text||'',htmlStr),confirms=all.filter(isConfirm),others=all.filter(u=>!isConfirm(u));
     let html='';
-    if(confirms.length){
-      html+=`<div style="margin-bottom:16px">
-        <div class="links-label">${esc(T.linksConfirmLabel)}</div>
-        ${confirms.map(u=>`<a class="link-card confirm" href="${esc(u)}" target="_blank" rel="noopener">
-          <span class="link-confirm-badge">${esc(T.linkConfirmBadge)}</span>
-          <span class="link-url">${esc(u)}</span>
-          <span class="link-arrow">↗</span>
-        </a>`).join('')}
-      </div>`;
-    }
-    if(others.length){
-      html+=`<div style="margin-bottom:16px">
-        <div class="links-label">${esc(T.linksLabel)}</div>
-        ${others.map(u=>`<a class="link-card" href="${esc(u)}" target="_blank" rel="noopener">
-          <span class="link-url">${esc(u)}</span>
-          <span class="link-arrow">↗</span>
-        </a>`).join('')}
-      </div>`;
-    }
-    if(m.text?.trim()){
-      if(html)html+='<hr class="body-divider">';
-      html+=`<div class="links-label" style="margin-bottom:10px">${esc(T.contentLabel)}</div><div class="email-body-text">${esc(m.text.trim())}</div>`;
-    }
-    if(!html)html=`<p style="color:var(--txt3);font-size:13px">${esc(T.emptyBody)}</p>`;
-    $('dBody').innerHTML=html;
-    $('detailCard').style.display='block';
-    $('detailCard').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }catch(e){showToast(T.errNoEmail+e.message);}
+    if(confirms.length)html+=`<div style="margin-bottom:16px"><div class="links-label">Bestätigungs-Links</div>${confirms.map(u=>`<a class="link-card confirm" href="${esc(u)}" target="_blank" rel="noopener"><span class="link-confirm-badge">Bestätigen</span><span class="link-url">${esc(u)}</span><span class="link-arrow">↗</span></a>`).join('')}</div>`;
+    if(others.length)html+=`<div style="margin-bottom:16px"><div class="links-label">Links</div>${others.map(u=>`<a class="link-card" href="${esc(u)}" target="_blank" rel="noopener"><span class="link-url">${esc(u)}</span><span class="link-arrow">↗</span></a>`).join('')}</div>`;
+    if(m.text?.trim()){if(html)html+='<hr class="body-divider">';html+=`<div class="links-label" style="margin-bottom:10px">Inhalt</div><div class="email-body-text">${esc(m.text.trim())}</div>`;}
+    if(!html)html='<p style="color:var(--txt3);font-size:13px">(Leer)</p>';
+    $('dBody').innerHTML=html;$('detailCard').style.display='block';$('detailCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){showToast('Fehler: '+e.message);}
 }
 function closeDetail(){$('detailCard').style.display='none';}
+async function copyDetailBody(){if(!currentMsgText)return;const ok=await copyToClipboard(currentMsgText);showToast(ok?'📋 Kopiert ✓':'❌ Fehler');}
+async function copyEmail(){if(!addr)return;const ok=await copyToClipboard(addr);const el=$('emailAddr'),hint=$('copyHint');if(ok){el.textContent='Kopiert ✓';hint.textContent='';showToast('Kopiert ✓');}setTimeout(()=>{el.textContent=addr;hint.textContent='Tippen zum Kopieren';},2000);}
 
-// ── Copy ──────────────────────────────────────────────────────────────
-async function copyEmail(){
-  if(!addr)return;
-  try{await navigator.clipboard.writeText(addr);}catch(e){}
-  // Swap text inside the field
-  const el=$('emailAddr');
-  const hint=$('copyHint');
-  el.textContent=T.copyFlash;
-  hint.textContent='';
-  el.style.color='var(--txt)';
-  setTimeout(()=>{
-    el.textContent=addr;
-    hint.textContent=T.copyHint;
-    el.style.color='';
-  },2000);
-}
-
-// ── Saved ─────────────────────────────────────────────────────────────
-function loadSaved(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
-function writeSaved(a){localStorage.setItem(SK,JSON.stringify(a));}
-
-function updateSavedBadge(){
-  const n=loadSaved().length;
-  const b=$('savedBadge');
-  b.textContent=n; b.style.display=n?'':'none';
-}
-
-function openSave(){
-  if(!addr)return;
-  $('modalAddr').textContent=addr;
-  $('saveName').value='';
-  $('modalOv').classList.add('open');
-  setTimeout(()=>$('saveName').focus(),100);
-}
+// ════════════════════════════════════
+// SAVED EMAILS
+// ════════════════════════════════════
+async function updateSavedBadge(){const arr=await dbGetAll('saved_emails');const b=$('snav-saved-badge');if(!b)return;b.textContent=arr.length;b.style.display=arr.length?'':'none';}
+function openSave(){if(!addr)return;$('modalAddr').textContent=addr;$('saveName').value='';$('modalOv').classList.add('open');setTimeout(()=>$('saveName').focus(),150);}
 function closeModal(){$('modalOv').classList.remove('open');}
 function closeModalOv(e){if(e.target===$('modalOv'))closeModal();}
-
-function confirmSave(){
-  if(!addr)return;
-  const arr=loadSaved();
-  if(arr.find(x=>x.address===addr)){showToast(T.toastAlreadySaved);closeModal();return;}
-  arr.unshift({address:addr,password:pw,name:$('saveName').value.trim(),savedAt:new Date().toISOString(),id:rnd(8)});
-  writeSaved(arr);
-  updateSavedBadge();
-  closeModal();
-  showToast(T.toastSaved);
-}
-
-function deleteSaved(id){
-  writeSaved(loadSaved().filter(x=>x.id!==id));
-  updateSavedBadge(); renderSaved(); showToast(T.toastDeleted);
-}
-
-async function loadSaved_email(item){
-  switchTab('active');
-  clearInterval(aIv);clearInterval(tIv);
-  tok='';addr='';pw='';msgs=[];
-  $('emailAddr').textContent=T.generating;
-  $('copyHint').textContent='';
-  $('genBtn').disabled=true;$('saveBtn').disabled=true;$('refreshBtn').disabled=true;
-  $('statusDot').className='status-dot loading';
-  setStatus('loading', T.statusSavedLoading);
-  renderInbox(true);closeDetail();
-
+async function confirmSave(){if(!addr)return;const arr=await dbGetAll('saved_emails');if(arr.find(x=>x.address===addr)){showToast('Bereits gespeichert');closeModal();return;}await dbPut('saved_emails',{address:addr,password:pw,name:$('saveName').value.trim(),savedAt:new Date().toISOString(),id:rnd(8)});await updateSavedBadge();closeModal();showToast('✓ Gespeichert');}
+async function deleteSaved(id){await dbDel('saved_emails',id);await updateSavedBadge();renderSaved();showToast('Gelöscht');}
+async function loadSavedEmail(item){
+  switchPage('active');clearInterval(aIv);clearInterval(tIv);clearInterval(rcIv);
+  tok='';addr='';pw='';msgs=[];sessionStart=null;
+  $('emailAddr').textContent='Wird geladen…';$('copyHint').textContent='';$('genBtn').disabled=true;$('saveBtn').disabled=true;$('refreshBtn').disabled=true;$('statusDot').className='status-dot loading';$('refreshRingWrap').style.display='none';
+  setStatus('loading','Lade gespeicherte Email…');renderInbox(true);closeDetail();
   try{
     const tr=await fetch(BASE+'/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:item.address,password:item.password})});
     if(!tr.ok)throw new Error('HTTP '+tr.status);
-    tok=(await tr.json()).token; addr=item.address; pw=item.password;
+    tok=(await tr.json()).token;addr=item.address;pw=item.password;sessionStart=new Date();
+    $('emailAddr').textContent=addr;$('copyHint').textContent='Tippen zum Kopieren';$('statusDot').className='status-dot ok';$('genBtn').disabled=false;$('saveBtn').disabled=false;$('refreshBtn').disabled=false;
+    tMode='unlimited';$('timerReadout').textContent='∞ Gespeichert';$('timerFill').style.width='100%';
+    setStatus('ok','Gespeicherte Email aktiv');updateSenderFrom();startRefreshRing();
+    await doFetch(false);aIv=setInterval(()=>{doFetch(false);startRefreshRing();},15000);
+  }catch(e){$('statusDot').className='status-dot err';$('genBtn').disabled=false;$('emailAddr').textContent='Fehler – Email evtl. abgelaufen';setStatus('err',e.message);renderInbox(false);}
+}
+async function renderSaved(){
+  const arr=(await dbGetAll('saved_emails')).sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+  const el=$('savedList');
+  if(!arr.length){el.innerHTML='<div class="saved-empty">Noch keine Adressen gespeichert.<br><br>Klicke auf "+ Speichern" bei einer aktiven Email.</div>';return;}
+  el.innerHTML=arr.map(item=>`<div class="saved-item"><div class="saved-info"><div class="saved-addr">${esc(item.address)}</div><div class="saved-meta">${item.name?`<span class="saved-name-badge">${esc(item.name)}</span>`:''} ${new Date(item.savedAt).toLocaleDateString('de',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div></div><div class="saved-actions"><button class="btn btn-ghost btn-sm" onclick="copyText('${esc(item.address)}')">Kopieren</button><button class="btn btn-primary btn-sm" onclick='loadSavedEmail(${JSON.stringify(item)})'>Laden</button><button class="btn btn-danger btn-sm" onclick="deleteSaved('${item.id}')">&#x2715;</button></div></div>`).join('');
+}
+async function copyText(t){const ok=await copyToClipboard(t);showToast(ok?'Kopiert ✓':'❌ Fehler');}
 
-    $('emailAddr').textContent=addr;
-    $('copyHint').textContent=T.copyHint;
-    $('statusDot').className='status-dot ok';
-    $('genBtn').disabled=false;$('saveBtn').disabled=false;$('refreshBtn').disabled=false;
-    tMode='unlimited';
-    $('timerReadout').textContent=T.unlimitedSaved;
-    $('timerFill').style.width='100%';
-    setStatus('ok', T.statusSavedActive);
-    await doFetch(false);
-    aIv=setInterval(()=>doFetch(false),15000);
-  }catch(e){
-    $('statusDot').className='status-dot err';
-    $('genBtn').disabled=false;
-    $('emailAddr').textContent=T.errorExpired;
-    setStatus('err', e.message);
-    renderInbox(false);
+// ════════════════════════════════════
+// PWNED
+// ════════════════════════════════════
+async function checkEmail(){
+  const email=$('pwnedEmailInput').value.trim();
+  if(!email||!email.includes('@')){showToast('Bitte gültige Email eingeben');return;}
+  const btn=$('checkEmailBtn'),res=$('pwnedEmailResult');
+  btn.disabled=true;btn.textContent='Prüfe…';
+  res.innerHTML='<div class="pwned-loading"><span class="spin" style="font-size:18px;display:inline-block">↻</span><br><br>Durchsuche Datenbanken…</div>';
+  try{
+    const r=await fetch(`https://api.xposedornot.com/v1/check-email/${encodeURIComponent(email)}`,{signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(r.status===404||d.Error==='Not found'||d.exposed===false){
+      res.innerHTML=`<div class="pwned-result safe" style="display:block"><div class="pwned-status-row"><div class="pwned-icon good">✅</div><div class="pwned-status-txt"><h3 style="color:var(--safe)">Nicht gefunden!</h3><p>Diese Email wurde in keiner bekannten Datenpanne gefunden.</p></div></div></div>`;
+    }else if(d.breaches||d.ExposedBreaches||d.exposed_breaches){
+      const breachList=d.ExposedBreaches?.breaches_details||d.breaches||[];
+      const count=Array.isArray(breachList)?breachList.length:(d.exposed_breaches||1);
+      const items=Array.isArray(breachList)?breachList:[];
+      res.innerHTML=`<div class="pwned-result pwned" style="display:block"><div class="pwned-status-row"><div class="pwned-icon bad">⚠️</div><div class="pwned-status-txt"><h3 style="color:var(--pwned)">${count} Datenpanne${count!==1?'n':''} gefunden!</h3><p>Passwörter für diese Dienste sofort ändern!</p></div></div>${items.length?`<ul class="breach-list">${items.slice(0,10).map(b=>{const name=b.domain||b.name||b.breach||b||'Unbekannt';return`<li class="breach-item"><div class="breach-logo">${String(name)[0]?.toUpperCase()||'?'}</div><div class="breach-info"><div class="breach-name">${esc(String(name))}</div></div></li>`;}).join('')}</ul>`:''}<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--brd)"><p style="font-size:12px;color:var(--txt3)">Details: <a href="https://haveibeenpwned.com/account/${encodeURIComponent(email)}" target="_blank" rel="noopener" style="color:var(--txt2);text-decoration:underline;text-underline-offset:2px">haveibeenpwned.com ↗</a></p></div></div>`;
+    }else{_showHibpFallback(email,res);}
+  }catch(e){_showHibpFallback(email,res);}
+  btn.disabled=false;btn.textContent='Prüfen';
+}
+function _showHibpFallback(email,res){res.innerHTML=`<div class="pwned-result" style="display:block;border-color:var(--brd)"><div class="pwned-status-row"><div class="pwned-icon" style="background:var(--s3);font-size:20px">🔍</div><div class="pwned-status-txt"><h3>API nicht erreichbar</h3><p>Bitte direkt auf HaveIBeenPwned prüfen.</p></div></div><a href="https://haveibeenpwned.com/account/${encodeURIComponent(email)}" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;display:flex;justify-content:center;text-decoration:none;margin-top:12px;">Auf HaveIBeenPwned.com prüfen ↗</a></div>`;}
+
+async function checkPassword(){
+  const pw=$('pwnedPwInput').value;if(!pw||pw.length<1){showToast('Bitte Passwort eingeben');return;}
+  const btn=$('checkPwBtn'),res=$('pwnedPwResult');btn.disabled=true;btn.textContent='Prüfe…';
+  res.innerHTML='<div class="pwned-loading"><span class="spin" style="font-size:18px;display:inline-block">↻</span><br><br>Prüfe sicher…</div>';
+  const bar=$('pwStrengthBar');const strength=pw.length<8?'weak':pw.length<12||!/[A-Z]/.test(pw)||!/[0-9]/.test(pw)?'medium':'strong';
+  bar.style.width=strength==='weak'?'30%':strength==='medium'?'60%':'100%';bar.className='pw-strength-bar '+strength;
+  try{
+    const msgBuffer=new TextEncoder().encode(pw);const hashBuffer=await crypto.subtle.digest('SHA-1',msgBuffer);
+    const hashHex=Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    const prefix=hashHex.slice(0,5);const suffix=hashHex.slice(5);
+    const r=await fetch(`https://api.pwnedpasswords.com/range/${prefix}`,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const text=await r.text();let count=0;
+    for(const line of text.split('\n')){const[h,c]=line.trim().split(':');if(h===suffix){count=parseInt(c);break;}}
+    if(count>0){res.innerHTML=`<div style="margin-top:10px"><span class="pw-result-pill pwned-pill">⚠️ ${count.toLocaleString('de')}× geleakt</span><p style="font-size:12px;color:var(--txt3);margin-top:10px;line-height:1.6">Dieses Passwort wurde <strong style="color:var(--pwned)">${count.toLocaleString('de')}-mal</strong> gefunden. Sofort ändern!</p></div>`;}
+    else{res.innerHTML=`<div style="margin-top:10px"><span class="pw-result-pill safe-pill">✅ Sicher</span><p style="font-size:12px;color:var(--txt3);margin-top:10px;line-height:1.6">Nicht in bekannten Datenlecks gefunden.</p></div>`;}
+  }catch(e){res.innerHTML=`<p style="font-size:13px;color:var(--txt3);margin-top:10px">Prüfung fehlgeschlagen: ${esc(e.message)}<br><a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noopener" style="color:var(--txt2)">Manuell prüfen ↗</a></p>`;}
+  btn.disabled=false;btn.textContent='Prüfen';
+}
+$('pwnedPwInput').addEventListener('input',function(){const pw=this.value,bar=$('pwStrengthBar');if(!pw){bar.style.width='0';bar.className='pw-strength-bar';return;}const s=pw.length<8?'weak':pw.length<12||!/[A-Z]/.test(pw)||!/[0-9]/.test(pw)?'medium':'strong';bar.style.width=s==='weak'?'30%':s==='medium'?'60%':'100%';bar.className='pw-strength-bar '+s;});
+
+// ════════════════════════════════════
+// MAILJET EMAIL SENDER
+// ════════════════════════════════════
+// Mailjet ersetzt den alten SMTP.js-Ansatz vollständig.
+// Mailjet bietet eine REST HTTP API (CORS-kompatibel) —
+// funktioniert direkt im Browser ohne SMTP-Tunnel.
+//
+// API Endpoint: https://api.mailjet.com/v3.1/send
+// Auth: HTTP Basic Auth mit Public Key + Secret Key
+// Der Public Key ist hinterlegt: c4113cb2b4cae1148dc39bb71dc5171a
+// Der Secret Key wird vom User einmalig eingegeben + lokal gespeichert.
+//
+// WICHTIG: Mailjet erlaubt nur verifizierte Absenderadressen/Domains.
+// Temp-Emails (mail.tm) sind NICHT verifiziert → Mailjet lehnt sie ab.
+// Der User muss eine eigene verifizierte Adresse als Absender hinterlegen.
+// ════════════════════════════════════
+
+const MJ_PUBLIC_KEY = 'c4113cb2b4cae1148dc39bb71dc5171a';
+const MJ_SECRET_STORE = 'altmail_mj_secret_v1';
+const MJ_API = 'https://api.mailjet.com/v3.1/send';
+
+function getMjSecret() {
+  try { return localStorage.getItem(MJ_SECRET_STORE) || ''; } catch { return ''; }
+}
+function saveMjSecret() {
+  const val = $('mjSecretKey').value.trim();
+  if (!val) { showToast('Secret Key eingeben'); return; }
+  try {
+    localStorage.setItem(MJ_SECRET_STORE, val);
+    showToast('✓ Mailjet Secret Key gespeichert');
+    $('mjSecretKey').value = '';
+    $('mjSecretKey').placeholder = '●●●●●●●●●●●● (gespeichert)';
+  } catch { showToast('❌ Speicherfehler'); }
+}
+function clearMjSecret() {
+  try { localStorage.removeItem(MJ_SECRET_STORE); } catch {}
+  $('mjSecretKey').value = '';
+  $('mjSecretKey').placeholder = 'Mailjet Secret Key (aus Dashboard)';
+  showToast('Secret Key gelöscht');
+}
+
+let sentEmails = [];
+
+function updateSenderFrom() {
+  const el = $('senderFrom'), dot = $('senderDot');
+  const infoBox = $('senderInfoBox');
+  const warnBox = $('senderWarnBox');
+  const mjFromDisplay = $('mjFromDisplay');
+  const overrideVal = $('mjFromOverride')?.value?.trim();
+  const activeFrom = overrideVal || addr;
+  if (addr || overrideVal) {
+    el.textContent = addr || 'Keine Temp-Email (Override aktiv)';
+    dot.className = 'status-dot ok';
+    if (infoBox) { infoBox.style.display = 'block'; }
+    if (mjFromDisplay) mjFromDisplay.textContent = activeFrom || '—';
+    if (warnBox) warnBox.style.display = 'none';
+  } else {
+    el.textContent = 'Keine Email aktiv — zuerst Email generieren';
+    dot.className = 'status-dot';
+    if (infoBox) infoBox.style.display = 'none';
+    if (warnBox) warnBox.style.display = 'block';
   }
 }
 
-function renderSaved(){
-  const arr=loadSaved();
-  const el=$('savedList');
-  if(!arr.length){
-    const lines=T.savedEmptyMsg.split('\n');
-    el.innerHTML=`<div class="saved-empty">${lines.map(esc).join('<br>')}</div>`;
+function setSendStatus(type, msg) {
+  const el = $('sendStatus');
+  el.className = 'send-status ' + type;
+  el.innerHTML = msg;
+}
+
+// ── MAILJET SEND FUNCTION ──
+async function sendViaMailjet({ fromEmail, fromName, toEmail, toName, subject, textBody }) {
+  const secret = getMjSecret();
+  if (!secret) throw new Error('Mailjet Secret Key fehlt — bitte unten eingeben');
+
+  const credentials = btoa(`${MJ_PUBLIC_KEY}:${secret}`);
+
+  const payload = {
+    Messages: [{
+      From: { Email: fromEmail, Name: fromName || fromEmail },
+      To: [{ Email: toEmail, Name: toName || toEmail }],
+      Subject: subject,
+      TextPart: textBody,
+      HTMLPart: `<pre style="font-family:sans-serif;white-space:pre-wrap">${textBody.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`
+    }]
+  };
+
+  const response = await fetch(MJ_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${credentials}`
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15000)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // Mailjet gibt detaillierte Fehlermeldungen zurück
+    const errMsg = data.Messages?.[0]?.Errors?.[0]?.ErrorMessage
+      || data.ErrorMessage
+      || data.StatusCode
+      || `HTTP ${response.status}`;
+    throw new Error(errMsg);
+  }
+
+  // Mailjet Success: Status "success" in Messages[0].Status
+  const msgStatus = data.Messages?.[0]?.Status;
+  if (msgStatus && msgStatus.toLowerCase() !== 'success') {
+    const errMsg = data.Messages?.[0]?.Errors?.[0]?.ErrorMessage || 'Unbekannter Mailjet-Fehler';
+    throw new Error(errMsg);
+  }
+
+  return data;
+}
+
+async function sendEmail() {
+  const toEmail = $('sendTo').value.trim();
+  const toName = $('mjToName').value.trim();
+  const subject = $('sendSubject').value.trim();
+  const body = $('sendBody').value.trim();
+  const fromOverride = $('mjFromOverride').value.trim();
+  const fromName = $('mjFromName').value.trim();
+
+  // Absender bestimmen: Override > aktive Temp-Email
+  const fromEmail = fromOverride || addr;
+
+  if (!toEmail || !toEmail.includes('@')) { showToast('Empfänger-Email ungültig'); return; }
+  if (!subject) { showToast('Betreff eingeben'); return; }
+  if (!body) { showToast('Nachricht eingeben'); return; }
+  if (!fromEmail) { showToast('Kein Absender — Email generieren oder Override eingeben'); return; }
+
+  // Secret Key prüfen
+  const secret = getMjSecret();
+  if (!secret) {
+    setSendStatus('error',
+      '⚠ <strong>Mailjet Secret Key fehlt.</strong><br>' +
+      '<span style="font-size:12px;color:var(--txt3)">Gib deinen Mailjet Secret Key unten in der Konfiguration ein.</span>'
+    );
+    showToast('Secret Key fehlt — bitte eingeben');
     return;
   }
-  el.innerHTML=arr.map(item=>`
-    <div class="saved-item">
-      <div class="saved-info">
-        <div class="saved-addr">${esc(item.address)}</div>
-        <div class="saved-meta">
-          ${item.name?`<span class="saved-name-badge">${esc(item.name)}</span>`:''}
-          ${new Date(item.savedAt).toLocaleDateString(currentLang,{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
-        </div>
-      </div>
-      <div class="saved-actions">
-        <button class="btn btn-ghost btn-sm" onclick="copyText('${esc(item.address)}')">${esc(T.btnCopy)}</button>
-        <button class="btn btn-primary btn-sm" onclick='loadSaved_email(${JSON.stringify(item)})'>${esc(T.btnLoad)}</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteSaved('${item.id}')">✕</button>
-      </div>
-    </div>`).join('');
+
+  const btn = $('sendBtn');
+  btn.disabled = true;
+  $('sendBtnIcon').className = 'spin';
+  setSendStatus('loading-status', '<span class="spin">↻</span>&nbsp; Sende via Mailjet…');
+
+  try {
+    await sendViaMailjet({ fromEmail, fromName, toEmail, toName, subject, textBody: body });
+
+    setSendStatus('success', `✦ Email via Mailjet gesendet von <strong>${esc(fromEmail)}</strong>`);
+    await saveSentEmail({
+      id: rnd(8), to: toEmail, subject, body,
+      from: fromEmail, sentAt: new Date().toISOString(),
+      status: 'gesendet ✦ Mailjet'
+    });
+    clearCompose();
+    renderSentList();
+    showToast('✦ Email gesendet via Mailjet!');
+
+  } catch (e) {
+    let hint = '';
+    const msg = e.message || '';
+
+    // Hilfreiche Hinweise je nach Mailjet-Fehlermeldung
+    if (/sender/i.test(msg) || /not authorized/i.test(msg) || /verified/i.test(msg)) {
+      hint = '<br><span style="font-size:12px;color:var(--txt3)">→ Absender-Adresse ist nicht in Mailjet verifiziert. Verifizierte Adresse als Override eintragen.</span>';
+    } else if (/secret/i.test(msg) || /401/i.test(msg) || /unauthorized/i.test(msg)) {
+      hint = '<br><span style="font-size:12px;color:var(--txt3)">→ Secret Key falsch oder abgelaufen. Bitte neu eingeben.</span>';
+    } else if (/quota/i.test(msg) || /limit/i.test(msg)) {
+      hint = '<br><span style="font-size:12px;color:var(--txt3)">→ Mailjet-Tageslimit erreicht (200 Emails/Tag im Free Plan).</span>';
+    } else if (/timeout/i.test(msg) || /network/i.test(msg)) {
+      hint = '<br><span style="font-size:12px;color:var(--txt3)">→ Netzwerkfehler. Internetverbindung prüfen.</span>';
+    }
+
+    setSendStatus('error',
+      `⚠ Mailjet-Fehler: <strong>${esc(msg)}</strong>${hint}<br><br>` +
+      `<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">` +
+      `<a href="https://app.mailjet.com/account/api_keys" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="text-decoration:none">Mailjet Dashboard ↗</a>` +
+      `<button class="btn btn-ghost btn-sm" onclick="copyDraftToClipboard()">📋 Entwurf kopieren</button>` +
+      `</div>`
+    );
+
+    // Als fehlgeschlagener Entwurf speichern
+    await saveSentEmail({
+      id: rnd(8), to: toEmail, subject, body,
+      from: fromEmail, sentAt: new Date().toISOString(),
+      status: '⚠ Fehler'
+    });
+    renderSentList();
+    showToast('⚠ Mailjet-Fehler: ' + msg.slice(0, 40));
+  }
+
+  btn.disabled = false;
+  $('sendBtnIcon').className = '';
+  $('sendBtnIcon').textContent = '↑';
 }
 
-function copyText(t){
-  try{navigator.clipboard.writeText(t);}catch(e){}
-  showToast(T.toastCopied);
+async function copyDraftToClipboard() {
+  const to = $('sendTo').value.trim();
+  const subject = $('sendSubject').value.trim();
+  const body = $('sendBody').value.trim();
+  const from = $('mjFromOverride').value.trim() || addr;
+  const text = `An: ${to}\nVon: ${from}\nBetreff: ${subject}\n\n${body}`;
+  const ok = await copyToClipboard(text);
+  showToast(ok ? '📋 Entwurf kopiert ✓' : '❌ Fehler');
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────
-let toastT;
-function showToast(msg){
-  const t=$('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);
+function clearCompose() {
+  $('sendTo').value = '';
+  $('mjToName').value = '';
+  $('sendSubject').value = '';
+  $('sendBody').value = '';
+  const el = $('sendStatus');
+  el.className = 'send-status';
+  el.innerHTML = '';
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeModal();}});
+async function saveSentEmail(item) {
+  await dbPut('sent_emails', item);
+  sentEmails = await dbGetAll('sent_emails');
+  const b = $('snav-sender-badge');
+  if (b) { b.textContent = sentEmails.length; b.style.display = sentEmails.length ? '' : 'none'; }
+}
+
+async function renderSentList() {
+  sentEmails = await dbGetAll('sent_emails');
+  sentEmails.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  const el = $('sentList'), card = $('sentCard');
+  $('sentCount').textContent = sentEmails.length;
+  if (!sentEmails.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  el.innerHTML = sentEmails.map(s => {
+    const isSent = s.status && s.status.includes('gesendet');
+    const statusColor = isSent ? 'color:#4ade80' : s.status === '⚠ Fehler' ? 'color:#f87171' : 'color:var(--txt3)';
+    return `<div class="sent-item"><div class="sent-info"><div class="sent-to">${esc(s.to)}</div><div class="sent-subj">${esc(s.subject)}</div><div class="sent-meta" style="${statusColor}">${esc(s.status || '')} · ${new Date(s.sentAt).toLocaleString('de', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</div></div><div class="sent-actions"><button class="btn btn-ghost btn-sm" onclick="showSentDetail('${s.id}')">Ansehen</button><button class="btn btn-danger btn-sm" onclick="deleteSent('${s.id}')">&#x2715;</button></div></div>`;
+  }).join('');
+}
+function showSentDetail(id) { const s = sentEmails.find(x => x.id === id); if (!s) return; $('sdTitle').textContent = s.subject; $('sdMeta').textContent = 'An: ' + s.to + ' · Von: ' + s.from + ' · ' + new Date(s.sentAt).toLocaleString('de'); $('sdBody').textContent = s.body; $('sentDetailOv').classList.add('open'); }
+async function deleteSent(id) { await dbDel('sent_emails', id); await renderSentList(); }
+async function clearSentHistory() { const all = await dbGetAll('sent_emails'); for (const s of all) await dbDel('sent_emails', s.id); await renderSentList(); showToast('Verlauf geleert'); }
+
+// ════════════════════════════════════
+// WHOAMI
+// ════════════════════════════════════
+async function renderWhoami(){
+  const card=$('whoamiCard');const user=loadUser();const saved=await dbGetAll('saved_emails');
+  const ua=navigator.userAgent;let browser='Unbekannt',os='Unbekannt';
+  if(/Firefox\//.test(ua))browser='Firefox';else if(/Edg\//.test(ua))browser='Edge';else if(/Chrome\//.test(ua))browser='Chrome';else if(/Safari\//.test(ua)&&!/Chrome/.test(ua))browser='Safari';
+  if(/Windows NT 10/.test(ua))os='Windows 10/11';else if(/Mac OS X/.test(ua))os='macOS';else if(/Android/.test(ua))os='Android';else if(/iPhone|iPad/.test(ua))os='iOS';else if(/Linux/.test(ua))os='Linux';
+  const isMobile=/Mobi|Android|iPhone|iPad/i.test(ua);
+  const sessionDuration=sessionStart?Math.floor((new Date()-sessionStart)/60000)+' min':'—';
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'—';
+  const onlineCount=parseInt($('onlineCount')?.textContent||'1');
+  const loginBtn=!user?`<div style="text-align:center;padding:0 0 20px"><button class="btn btn-primary" onclick="closeWhoamiAndOpenAuth()">Account erstellen / Login</button></div>`:'';
+  const mjSecret = getMjSecret();
+  const mjStatus = mjSecret ? '✓ Hinterlegt' : '✗ Fehlt';
+  const mjColor = mjSecret ? 'ok' : 'err';
+
+  card.innerHTML=`${user?`<div class="whoami-hero"><div class="whoami-avatar">${(user.email[0]||'?').toUpperCase()}</div><div class="whoami-name">${esc(user.name||user.email.split('@')[0])}</div><div class="whoami-sub">${esc(user.email)}</div></div>`:''}`+loginBtn+
+  `<div style="margin-bottom:20px"><div class="card-label" style="margin-bottom:12px">Session</div>
+  <div class="whoami-grid">
+    <div class="whoami-stat"><div class="whoami-stat-val">${msgs.length}</div><div class="whoami-stat-lbl">Emails</div></div>
+    <div class="whoami-stat"><div class="whoami-stat-val">${saved.length}</div><div class="whoami-stat-lbl">Gespeichert</div></div>
+    <div class="whoami-stat"><div class="whoami-stat-val">${totalRef}</div><div class="whoami-stat-lbl">Refreshes</div></div>
+    <div class="whoami-stat"><div class="whoami-stat-val">${sessionDuration}</div><div class="whoami-stat-lbl">Session</div></div>
+  </div></div>
+  <div><div class="card-label" style="margin-bottom:4px">Browser & Gerät</div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Browser</span><span class="whoami-row-val">${esc(browser)}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">OS</span><span class="whoami-row-val">${esc(os)}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Gerät</span><span class="whoami-row-val">${isMobile?'Mobil':'Desktop'}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Bildschirm</span><span class="whoami-row-val">${screen.width}×${screen.height}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Zeitzone</span><span class="whoami-row-val">${esc(tz)}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">IP-Adresse</span><span class="whoami-row-val ok" id="whoami-ip"><span class="spin" style="font-size:10px">↻</span> Laden…</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Unique IPs online</span><span class="whoami-row-val ok">${onlineCount}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Theme</span><span class="whoami-row-val">${document.documentElement.getAttribute('data-theme')==='dark'?'Dark':'Light'}</span></div>
+  <div class="whoami-row"><span class="whoami-row-lbl">Mailjet Secret</span><span class="whoami-row-val ${mjColor}">${mjStatus}</span></div></div>`;
+
+  getMyIP().then(ip => {
+    const ipEl = document.getElementById('whoami-ip');
+    if (ipEl) ipEl.innerHTML = esc(ip || '—');
+  });
+}
+function closeWhoamiAndOpenAuth(){switchPage('active');openAuthModal();}
+
+// ════════════════════════════════════
+// PHONE
+// ════════════════════════════════════
+let currentPhoneCountry='us',currentPhoneNum='',currentPhoneId='',smsIv;
+const PHONE_SOURCES={us:[{num:'+19162600026',id:'19162600026'},{num:'+15715732843',id:'15715732843'},{num:'+13522600906',id:'13522600906'}],uk:[{num:'+447520644530',id:'447520644530'},{num:'+447441425704',id:'447441425704'}],de:[{num:'+4915735985009',id:'4915735985009'},{num:'+4915735984892',id:'4915735984892'}],fr:[{num:'+33757059685',id:'33757059685'},{num:'+33755847632',id:'33755847632'}],ca:[{num:'+14389632198',id:'14389632198'},{num:'+16132091275',id:'16132091275'}],se:[{num:'+46769429093',id:'46769429093'}],nl:[{num:'+31685250870',id:'31685250870'}]};
+function selectCountry(code,btn){document.querySelectorAll('.country-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');currentPhoneCountry=code;currentPhoneNum='';currentPhoneId='';$('smsCard').style.display='none';$('activePhoneCard').style.display='none';clearInterval(smsIv);loadPhones();}
+function loadPhones(){const el=$('phoneList');const nums=PHONE_SOURCES[currentPhoneCountry]||PHONE_SOURCES.us;el.innerHTML=nums.map(({num,id})=>`<div class="phone-pill"><div class="status-dot ok"></div><span class="phone-number">${esc(num)}</span><button class="btn btn-ghost btn-sm" onclick="copyPhoneNum('${num.replace(/'/g,'')}',this)">Kopieren</button><button class="btn btn-primary btn-sm" style="margin-left:4px" onclick="selectPhone('${num.replace(/'/g,'')}','${id}')">SMS</button></div>`).join('');}
+async function copyPhoneNum(num,btn){const ok=await copyToClipboard(num);if(ok){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1500);}showToast(ok?'Kopiert ✓':'❌ Fehler');}
+async function selectPhone(num,id){currentPhoneNum=num;currentPhoneId=id;$('activePhoneNum').textContent=num;$('activePhoneCard').style.display='block';$('smsCard').style.display='block';$('activePhoneCard').scrollIntoView({behavior:'smooth',block:'nearest'});await refreshSms();clearInterval(smsIv);smsIv=setInterval(refreshSms,20000);}
+async function copyActivePhone(){if(!currentPhoneNum)return;const ok=await copyToClipboard(currentPhoneNum);const el=$('activePhoneNum');if(ok){el.textContent='Kopiert ✓';setTimeout(()=>el.textContent=currentPhoneNum,2000);}else showToast('❌ Fehler');}
+async function refreshSms(){
+  if(!currentPhoneId)return;
+  const el=$('smsList'),empty=$('smsEmpty');empty.style.display='none';
+  el.innerHTML='<li style="padding:14px 10px;color:var(--txt3);font-size:12px;border-top:1px solid var(--brd)"><span class="spin">↻</span> Lade SMS…</li>';
+  try{
+    const r=await fetch(`https://quackr.io/api/tools/temporary-phone-number/${currentPhoneId}/messages`,{headers:{'Accept':'application/json'},signal:AbortSignal.timeout(12000)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();const list=Array.isArray(data)?data:(data.messages||data.data||[]);
+    $('smsCount').textContent=list.length;
+    if(!list.length){el.innerHTML='';empty.style.display='';empty.innerHTML=`<div class="empty-icon" style="font-size:20px">💬</div><h3>Keine SMS</h3><p>Sende eine SMS an <strong>${esc(currentPhoneNum)}</strong>.</p>`;return;}
+    el.innerHTML=list.map(m=>{const from=m.sender||m.from||'Unbekannt',body=m.content||m.message||m.text||'',ts=m.receivedAt||m.created_at||'',t=ts?new Date(ts).toLocaleString('de',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';return`<li class="sms-item"><div class="sms-av">📱</div><div style="flex:1;min-width:0"><div class="sms-from">${esc(from)}</div><div class="sms-body">${esc(body)}</div><div class="sms-time">${esc(t)}</div></div></li>`;}).join('');
+  }catch(e){el.innerHTML='';empty.style.display='';empty.innerHTML='<div class="empty-icon" style="font-size:20px">💬</div><h3>Verbindungsfehler</h3><p>Bitte Refresh versuchen.</p>';}
+}
+
+// ════════════════════════════════════
+// AUTH
+// ════════════════════════════════════
+const AUTH_KEY='altmail_session';
+let currentUser=null;
+function loadUser(){try{return JSON.parse(sessionStorage.getItem(AUTH_KEY)||localStorage.getItem(AUTH_KEY)||'null');}catch{return null;}}
+function saveUserSession(u){try{localStorage.setItem(AUTH_KEY,JSON.stringify(u));sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));}catch{}}
+function clearUserSession(){try{localStorage.removeItem(AUTH_KEY);sessionStorage.removeItem(AUTH_KEY);}catch{}}
+
+async function openAuthModal(){
+  currentUser=loadUser();
+  if(currentUser){$('authLoggedOut').style.display='none';$('authLoggedIn').style.display='';$('authUserName').textContent=currentUser.name||currentUser.email.split('@')[0];$('authUserEmail').textContent=currentUser.email;$('authAvatarBig').textContent=(currentUser.email[0]||'?').toUpperCase();}
+  else{$('authLoggedOut').style.display='';$('authLoggedIn').style.display='none';$('authErr').classList.remove('show');$('authEmail').value='';$('authPw').value='';}
+  $('authModalOv').classList.add('open');setTimeout(()=>{try{$('authEmail').focus();}catch{}},300);
+}
+function closeAuthModal(){$('authModalOv').classList.remove('open');}
+function closeAuthModalOv(e){if(e.target===$('authModalOv'))closeAuthModal();}
+
+let authMode='login';
+function switchAuthTab(mode){authMode=mode;$('authTabLogin').classList.toggle('active',mode==='login');$('authTabReg').classList.toggle('active',mode==='register');$('authSubmitBtn').textContent=mode==='login'?'Login':'Registrieren';$('authErr').classList.remove('show');}
+function setAuthErr(msg){$('authErr').textContent=msg;$('authErr').classList.add('show');}
+
+async function authSubmit(){
+  const email=$('authEmail').value.trim();const apw=$('authPw').value;
+  if(!email||!/@/.test(email)){setAuthErr('Gültige E-Mail eingeben.');return;}
+  if(apw.length<6){setAuthErr('Passwort muss mind. 6 Zeichen haben.');return;}
+  const btn=$('authSubmitBtn');btn.disabled=true;btn.textContent='…';
+  try{
+    if(authMode==='register'){
+      const existing=await dbGet('users',email);if(existing){setAuthErr('Account existiert bereits.');return;}
+      const hashBuf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(apw+'altmail_salt_2024'));
+      const hashHex=Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      const user={email,pwHash:hashHex,name:email.split('@')[0],createdAt:new Date().toISOString()};
+      await dbPut('users',user);currentUser={email,name:user.name};saveUserSession(currentUser);
+      updateAuthUI();closeAuthModal();showToast('✓ Account erstellt & eingeloggt');
+    }else{
+      const u=await dbGet('users',email);if(!u){setAuthErr('E-Mail oder Passwort falsch.');return;}
+      const hashBuf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(apw+'altmail_salt_2024'));
+      const hashHex=Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      if(u.pwHash!==hashHex){setAuthErr('E-Mail oder Passwort falsch.');return;}
+      currentUser={email,name:u.name};saveUserSession(currentUser);
+      updateAuthUI();closeAuthModal();showToast('✓ Eingeloggt als '+(u.name||email));
+    }
+  }finally{btn.disabled=false;btn.textContent=authMode==='login'?'Login':'Registrieren';}
+}
+
+function authLogout(){clearUserSession();currentUser=null;updateAuthUI();closeAuthModal();showToast('Ausgeloggt');}
+function updateAuthUI(){const u=loadUser();const av=$('authAvatar');if(u){av.textContent=(u.email[0]||'?').toUpperCase();av.style.borderColor='var(--brd-act)';av.style.color='var(--txt)';}else{av.textContent='?';av.style.borderColor='';av.style.color='';}$('auth-nav-label').textContent=u?(u.name||u.email.split('@')[0]):'Account';}
+
+$('authEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('authPw').focus();});
+$('authPw').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit();});
 $('saveName').addEventListener('keydown',e=>{if(e.key==='Enter')confirmSave();});
 
-
-// ══════════════════════════════════════
-// ACCOUNT SYSTEM
-// ══════════════════════════════════════
-const AUTH_SK = 'altmail_auth';
-let currentUser = null;
-
-function loadUser(){ try{ return JSON.parse(localStorage.getItem(AUTH_SK)||'null'); }catch(e){ return null; } }
-function saveUser(u){ localStorage.setItem(AUTH_SK, JSON.stringify(u)); }
-function clearUser(){ localStorage.removeItem(AUTH_SK); }
-
-function openAuthModal(){
-  currentUser = loadUser();
-  if(currentUser){
-    $('authLoggedOut').style.display='none';
-    $('authLoggedIn').style.display='';
-    $('authUserName').textContent = currentUser.name || currentUser.email.split('@')[0];
-    $('authUserEmail').textContent = currentUser.email;
-    $('authAvatarBig').textContent = (currentUser.email[0]||'?').toUpperCase();
-  } else {
-    $('authLoggedOut').style.display='';
-    $('authLoggedIn').style.display='none';
-    $('authErr').classList.remove('show');
-    $('authEmail').value='';
-    $('authPw').value='';
-  }
-  $('authModalOv').classList.add('open');
-  setTimeout(()=>$('authEmail').focus(),120);
-}
-function closeAuthModal(){ $('authModalOv').classList.remove('open'); }
-function closeAuthModalOv(e){ if(e.target===$('authModalOv'))closeAuthModal(); }
-
-let authMode = 'login';
-function switchAuthTab(mode){
-  authMode = mode;
-  $('authTabLogin').classList.toggle('active', mode==='login');
-  $('authTabReg').classList.toggle('active', mode==='register');
-  $('authSubmitBtn').textContent = mode==='login' ? 'Login' : 'Registrieren';
-  $('authErr').classList.remove('show');
-}
-
-function setAuthErr(msg){ $('authErr').textContent=msg; $('authErr').classList.add('show'); }
-
-function authSubmit(){
-  const email = $('authEmail').value.trim();
-  const pw = $('authPw').value;
-  if(!email || !/@/.test(email)){ setAuthErr('Gültige E-Mail eingeben.'); return; }
-  if(pw.length < 6){ setAuthErr('Passwort muss mindestens 6 Zeichen haben.'); return; }
-
-  const users = JSON.parse(localStorage.getItem('altmail_users')||'{}');
-
-  if(authMode === 'register'){
-    if(users[email]){ setAuthErr('Account existiert bereits. Bitte einloggen.'); return; }
-    const user = { email, pw: btoa(pw), name: email.split('@')[0], createdAt: new Date().toISOString() };
-    users[email] = user;
-    localStorage.setItem('altmail_users', JSON.stringify(users));
-    currentUser = { email, name: user.name };
-    saveUser(currentUser);
-    updateAuthUI();
-    closeAuthModal();
-    showToast('✓ Account erstellt & eingeloggt');
-  } else {
-    const u = users[email];
-    if(!u || atob(u.pw) !== pw){ setAuthErr('E-Mail oder Passwort falsch.'); return; }
-    currentUser = { email, name: u.name };
-    saveUser(currentUser);
-    updateAuthUI();
-    closeAuthModal();
-    showToast('✓ Eingeloggt als ' + (u.name||email));
-  }
-}
-
-function authLogout(){
-  clearUser(); currentUser = null;
-  updateAuthUI();
-  closeAuthModal();
-  showToast('Ausgeloggt');
-}
-
-function updateAuthUI(){
-  const u = loadUser();
-  const av = $('authAvatar');
-  if(u){
-    av.textContent = (u.email[0]||'?').toUpperCase();
-    av.style.borderColor = 'rgba(255,255,255,0.3)';
-    av.style.color = 'var(--txt)';
-  } else {
-    av.textContent = '?';
-    av.style.borderColor = '';
-    av.style.color = '';
-  }
-}
-
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeDetail(); closeModal(); closeAuthModal(); }
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName.toLowerCase();
+  if(tag==='input'||tag==='textarea')return;
+  if(e.key==='Escape'){closeDetail();closeModal();closeAuthModal();$('sentDetailOv').classList.remove('open');}
+  if(e.key.toLowerCase()==='n'&&!e.ctrlKey&&!e.metaKey&&!$('genBtn').disabled)doGenerate();
+  if(e.key.toLowerCase()==='c'&&!e.ctrlKey&&!e.metaKey&&addr)copyEmail();
+  if(e.key.toLowerCase()==='r'&&!e.ctrlKey&&!e.metaKey&&!$('refreshBtn').disabled)doFetch(true);
 });
 
-// ══════════════════════════════════════
-// PHONE NUMBERS
-// ══════════════════════════════════════
-let currentPhoneCountry = 'us';
-let currentPhoneNum = '';
-let smsIv;
+if(window.innerWidth<=768){$('mobile-theme-toggle').style.display='flex';}
+window.addEventListener('resize',()=>{$('mobile-theme-toggle').style.display=window.innerWidth<=768?'flex':'none';});
 
-const PHONE_COUNTRIES = {
-  us: { flag:'🇺🇸', label:'USA',  code:'+1'  },
-  uk: { flag:'🇬🇧', label:'UK',   code:'+44' },
-  de: { flag:'🇩🇪', label:'DE',   code:'+49' },
-  fr: { flag:'🇫🇷', label:'FR',   code:'+33' },
-  ca: { flag:'🇨🇦', label:'CA',   code:'+1'  },
-  se: { flag:'🇸🇪', label:'SE',   code:'+46' },
-  nl: { flag:'🇳🇱', label:'NL',   code:'+31' },
-};
-
-// Real number pools scraped & hardcoded from public temp-SMS sites
-// These are genuine publicly listed numbers that accept SMS
-const NUMBER_POOL = {
-  us: ['+19163685627','+16307308629','+12138783702','+16072201755','+15303597402','+18102039336','+15179047330','+14702566648'],
-  uk: ['+447893886124','+447418310673','+447441425704','+447491152222','+447700171842','+447727547099'],
-  de: ['+4915735985009','+4915735984892','+4915735982441','+4915207821671','+4915207822134'],
-  fr: ['+33757059685','+33757058321','+33744637211','+33755847632'],
-  ca: ['+14389632198','+16132091275','+16478341920','+14165559871'],
-  se: ['+46769429093','+46769432107','+46761234567','+46762345678'],
-  nl: ['+31685250870','+31612345678','+31698765432','+31687654321'],
-};
-
-function selectCountry(code, btn){
-  document.querySelectorAll('.country-chip').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  currentPhoneCountry = code;
-  currentPhoneNum = '';
-  $('smsCard').style.display='none';
-  loadPhones();
-}
-
-async function loadPhones(){
-  const el = $('phoneList');
-  el.innerHTML = '<div style="color:var(--txt3);font-size:13px;padding:10px 0">↻ Lade Nummern…</div>';
-
-  const info = PHONE_COUNTRIES[currentPhoneCountry] || { flag:'', code:'' };
-  const pool = NUMBER_POOL[currentPhoneCountry] || NUMBER_POOL.us;
-
-  // Try to fetch live numbers from textverified public list (CORS enabled)
-  let liveNums = [];
-  try {
-    const tvMap = { us:'1', uk:'44', de:'49', fr:'33', ca:'1', se:'46', nl:'31' };
-    const prefix = tvMap[currentPhoneCountry] || '1';
-    const r = await fetch(
-      `https://www.textverified.com/api/pub/numbers?country_code=${prefix}`,
-      { headers:{ 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' },
-        signal: AbortSignal.timeout(4000) }
-    );
-    if(r.ok){
-      const d = await r.json();
-      const arr = d.data || d.numbers || d || [];
-      liveNums = arr.slice(0,8).map(x => x.number || x.phone_number || x).filter(n=>typeof n==='string' && n.startsWith('+'));
-    }
-  } catch(e){}
-
-  // Try receive-smsonline.com JSON API
-  if(!liveNums.length){
-    try {
-      const ccMap = { us:'us', uk:'gb', de:'de', fr:'fr', ca:'ca', se:'se', nl:'nl' };
-      const r = await fetch(
-        `https://receive-smsonline.com/api/numbers?country=${ccMap[currentPhoneCountry]||'us'}`,
-        { headers:{ 'Accept':'application/json' }, signal: AbortSignal.timeout(4000) }
-      );
-      if(r.ok){
-        const d = await r.json();
-        const arr = d.data || d.numbers || d || [];
-        liveNums = arr.slice(0,8).map(x => x.number || x.phone || x).filter(n=>typeof n==='string' && n.length > 6);
-      }
-    } catch(e){}
+// Init: Mailjet Secret-Feld Placeholder anpassen falls Key vorhanden
+(function(){
+  if(getMjSecret()){
+    const el=$('mjSecretKey');
+    if(el)el.placeholder='●●●●●●●●●●●● (gespeichert)';
   }
+})();
 
-  // Use live numbers if fetched, otherwise fall back to hardcoded pool
-  const nums = liveNums.length ? liveNums : pool;
-
-  el.innerHTML = nums.map(num => {
-    const n = String(num);
-    const safe = n.replace(/'/g,'');
-    return `<div class="phone-pill" style="cursor:default;margin-bottom:6px">
-      <div class="status-dot ok"></div>
-      <span class="phone-number" style="flex:1">${esc(n)}</span>
-      <button class="btn btn-ghost btn-sm" style="flex-shrink:0;padding:5px 11px;font-size:11px" onclick="copyPhoneNum('${safe}',this)">Kopieren</button>
-      <button class="btn btn-primary btn-sm" style="flex-shrink:0;padding:5px 11px;font-size:11px;margin-left:4px" onclick="selectPhone('${safe}')">SMS</button>
-    </div>`;
-  }).join('');
+// ════════════════════════════════════
+// BOOT
+// ════════════════════════════════════
+async function boot(){
+  await openDB();
+  await updateSavedBadge();
+  await renderSentList();
+  updateAuthUI();
+  initOnlineCounter();
+  await doGenerate();
 }
-
-function copyPhoneNum(num, btn){
-  try{ navigator.clipboard.writeText(num); }catch(e){}
-  const orig = btn.textContent;
-  btn.textContent = '✓';
-  setTimeout(()=>{ btn.textContent = orig; }, 1500);
-  showToast('Kopiert ✓');
-}
-
-async function selectPhone(num){
-  currentPhoneNum = num;
-  // Show active number card
-  $('activePhoneNum').textContent = num;
-  $('activePhoneCard').style.display='block';
-  $('smsCard').style.display='block';
-  $('activePhoneCard').scrollIntoView({behavior:'smooth',block:'nearest'});
-  await refreshSms();
-  clearInterval(smsIv);
-  smsIv = setInterval(refreshSms, 20000);
-}
-
-function copyActivePhone(){
-  const num = currentPhoneNum;
-  if(!num) return;
-  try{ navigator.clipboard.writeText(num); }catch(e){}
-  const el = $('activePhoneNum');
-  el.textContent = 'Kopiert ✓';
-  setTimeout(()=>{ el.textContent = num; }, 2000);
-}
-
-async function refreshSms(){
-  if(!currentPhoneNum) return;
-  const el=$('smsList'), empty=$('smsEmpty');
-  empty.style.display='none';
-  el.innerHTML='<li style="padding:12px 10px;color:var(--txt3);font-size:12px">↻ Lade SMS…</li>';
-
-  const numClean = currentPhoneNum.replace(/[^0-9]/g,'');
-  let messages = [];
-
-  // All the hardcoded numbers are on receive-sms.cc / sms24.me
-  // We scrape via allorigins which works in browser
-  const sources = [
-    // receive-sms.cc number page (scrape)
-    `https://api.allorigins.win/get?url=${encodeURIComponent('https://receive-sms.cc/' + numClean + '/')}`,
-    // sms24.me number page (scrape)
-    `https://api.allorigins.win/get?url=${encodeURIComponent('https://sms24.me/en/numbers/' + currentPhoneCountry + '/' + currentPhoneNum)}`,
-    // receive-sms-now.com (scrape)
-    `https://api.allorigins.win/get?url=${encodeURIComponent('https://receive-sms-now.com/' + numClean)}`,
-  ];
-
-  for(const src of sources){
-    if(messages.length) break;
-    try {
-      const r = await fetch(src, { signal: AbortSignal.timeout(7000) });
-      if(!r.ok) continue;
-      const d = await r.json();
-      const html = d.contents || '';
-      if(!html) continue;
-
-      // Extract sender + message pairs from HTML tables or divs
-      // Pattern: tables with sender/from/number and message/text columns
-      const rows = [...html.matchAll(/<tr[^>]*>([\s\S]{10,600}?)<\/tr>/gi)].map(m=>m[1]);
-      for(const row of rows){
-        const cells = [...row.matchAll(/<td[^>]*>([\s\S]{1,300}?)<\/td>/gi)].map(c=>c[1].replace(/<[^>]+>/g,'').trim()).filter(Boolean);
-        if(cells.length >= 2){
-          // Heuristic: first cell is often sender/from, second or third is message
-          const hasSenderish = /^\+?\d{5,}$/.test(cells[0]) || cells[0].length < 30;
-          const body = cells.find((c,i)=>i>0 && c.length>1 && !/^\d{1,2}[:\-\/]\d{2}/.test(c));
-          if(hasSenderish && body) messages.push({ sender:cells[0], body });
-        }
-      }
-      if(!messages.length){
-        // Try div-based layout
-        const senders = [...html.matchAll(/class="[^"]*(?:from|sender|number)[^"]*"[^>]*>([^<]{3,40})</gi)].map(m=>m[1].trim());
-        const bodies  = [...html.matchAll(/class="[^"]*(?:message|msg|sms-body|content|text)[^"]*"[^>]*>([\s\S]{1,400}?)<\/(?:div|p|td)/gi)].map(m=>m[1].replace(/<[^>]+>/g,'').trim()).filter(s=>s.length>1 && !/</.test(s));
-        messages = bodies.map((b,i)=>({ sender:senders[i]||'?', body:b }));
-      }
-    } catch(e){}
-  }
-
-  if(!messages.length){
-    el.innerHTML=''; empty.style.display='';
-    $('smsCount').textContent='0';
-    return;
-  }
-
-  empty.style.display='none';
-  $('smsCount').textContent = messages.length;
-  el.innerHTML = messages.slice(0,20).map(msg=>{
-    const body   = msg.body||msg.message||msg.text||'';
-    const sender = msg.sender||msg.from||'Unbekannt';
-    const ts     = msg.created_at||msg.time||msg.date||'';
-    const timeStr = ts ? new Date(ts).toLocaleString(currentLang||'de',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-    return `<li class="sms-item">
-      <div class="sms-av">💬</div>
-      <div>
-        <div class="sms-from">${esc(String(sender))}</div>
-        <div class="sms-body">${esc(String(body))}</div>
-        ${timeStr?`<div class="sms-time">${esc(timeStr)}</div>`:''}
-      </div>
-    </li>`;
-  }).join('');
-}
-
-// ── Boot ──────────────────────────────────────────────────────────────
-updateSavedBadge();
-updateAuthUI();
-detectLanguage().then(() => doGenerate());
-$('authEmail') && $('authEmail').addEventListener('keydown', e=>{ if(e.key==='Enter') $('authPw').focus(); });
-$('authPw') && $('authPw').addEventListener('keydown', e=>{ if(e.key==='Enter') authSubmit(); });
+boot();
 </script>
 </body>
 </html>
